@@ -1,10 +1,11 @@
-include guile.am
+include build-aux/guile.am
 AUTOMAKE_OPTIONS = foreign
 ACLOCAL_AMFLAGS = -I m4
 
 SOURCES = \
     pln-bio/bio-utils.scm \
     pln-bio/ure-utils.scm \
+	pln-bio/rule-utils.scm \
     pln-bio/preprocess.scm \
     pln-bio/intensional-similarity.scm
 

@@ -1,3 +1,7 @@
+(define-module (pln-bio rule-utils)
+    #:use-module (opencog)
+    #:use-module (opencog exec)
+)
 ;; Useful rule generators
 
 ;;;;;;;;;;;;;;;;;
@@ -9,7 +13,7 @@
 ;; (LINK-TYPE-1 X Y)
 ;; |-
 ;; (LINK-TYPE-2 X Y)
-(define (gen-present-link-translation-rule LINK-TYPE-1 LINK-TYPE-2 VAR-TYPE)
+(define-public (gen-present-link-translation-rule LINK-TYPE-1 LINK-TYPE-2 VAR-TYPE)
   (let* ((X (Variable "$X"))
          (Y (Variable "$Y"))
          (XY-1 (LINK-TYPE-1 X Y))
@@ -33,7 +37,7 @@
 ;; (LINK-TYPE Y Z)
 ;; |-
 ;; (LINK-TYPE X Z)
-(define (gen-present-link-transitivity-rule LINK-TYPE VAR-TYPE)
+(define-public (gen-present-link-transitivity-rule LINK-TYPE VAR-TYPE)
   (let* ((X (Variable "$X"))
          (Y (Variable "$Y"))
          (Z (Variable "$Z"))
@@ -59,7 +63,7 @@
 ;; (LINK-TYPE-2 Y Z)
 ;; |-
 ;; (LINK-TYPE-1 X Z)
-(define (gen-present-mixed-link-transitivity-rule LINK-TYPE-1 LINK-TYPE-2
+(define-public (gen-present-mixed-link-transitivity-rule LINK-TYPE-1 LINK-TYPE-2
                                                   X-TYPE Y-TYPE Z-TYPE)
   (let* ((X (Variable "$X"))
          (Y (Variable "$Y"))
@@ -85,7 +89,7 @@
 ;; (Evaluation PRED (List Y Z))
 ;; |-
 ;; (Evaluation PRED (List X Z))
-(define (gen-present-predicate-transitivity-rule PRED VAR-TYPE)
+(define-public (gen-present-predicate-transitivity-rule PRED VAR-TYPE)
   (let* ((X (Variable "$X"))
          (Y (Variable "$Y"))
          (Z (Variable "$Z"))
@@ -111,7 +115,7 @@
 ;; (LINK-TYPE Y Z)
 ;; |-
 ;; (Evaluation PRED (List X Z))
-(define (gen-present-mixed-predicate-link-transitivity-rule PRED LINK-TYPE X-TYPE YZ-TYPE)
+(define-public (gen-present-mixed-predicate-link-transitivity-rule PRED LINK-TYPE X-TYPE YZ-TYPE)
   (let* ((X (Variable "$X"))
          (Y (Variable "$Y"))
          (Z (Variable "$Z"))
@@ -135,11 +139,11 @@
 ;;;;;;;;;;;;;;
 
 ;; Rule generator for the symmetry of link LINK-TYPE.
-(define (gen-present-link-symmetry-rule LINK-TYPE VAR-TYPE)
+(define-public (gen-present-link-symmetry-rule LINK-TYPE VAR-TYPE)
   (let* ((X (Variable "$X"))
          (Y (Variable "$Y"))
          (XY (LINK-TYPE X Y))
-         (YZ (LINK-TYPE Y Z)))
+         (YX (LINK-TYPE Y X)))
     (Bind
       (VariableList
         (TypedVariable X VAR-TYPE)
@@ -148,7 +152,7 @@
       YX)))
 
 ;; Rule generator for the symmetry of predicate PRED.
-(define (gen-present-predicate-symmetry-rule PRED VAR-TYPE)
+(define-public (gen-present-predicate-symmetry-rule PRED VAR-TYPE)
   (let* ((X (Variable "$X"))
          (Y (Variable "$Y"))
          (XY (Evaluation PRED (List X Y)))
