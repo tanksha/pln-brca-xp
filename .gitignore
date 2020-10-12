@@ -230,4 +230,5 @@ build/**
 
 #custom 
 kbs/
+results/
 *.log
