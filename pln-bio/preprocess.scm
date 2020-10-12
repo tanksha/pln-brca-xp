@@ -22,7 +22,10 @@
 (define GeneT (Type "GeneNode"))
 (define X (Variable "$X"))
 (define Y (Variable "$Y"))
-
+(define vardecl (VariableSet
+                  (TypedVariable X ConceptT)
+                  (TypedVariable Y ConceptT)))
+(define source (Inheritance X Y))
 ;; Parameters string
 (define param-str (string-append
                    "-rs=" (number->string rs)
@@ -36,10 +39,7 @@
     ;; Run FC to
     ;; 1. Translate Inheritance to SubSet
     ;; 2. Infer closure of GO annotation
-    (define vardecl (VariableSet
-                  (TypedVariable X ConceptT)
-                  (TypedVariable Y ConceptT)))
-    (define source (Inheritance X Y))
+
     (define (get-results-with-tvs result-lst) 
         (let ((all-mbrs (append (cog-outgoing-set result-lst)
                     (get-member-links 'GeneNode 'MolecularFunctionNode)
@@ -79,13 +79,10 @@
 
 
 
+(define target (Attraction X Y))
+
 (define (subset->attraction)
    ;; Run backward chainer to produce attraction links. 
-    (define vardecl (VariableSet
-                  (TypedVariable X ConceptT)
-                  (TypedVariable Y ConceptT)))
-    (define target (Attraction (Variable "$x") (Variable "$y")))
-
 
     (filter all-nodes-non-null-mean? (pln-bc target #:vardecl vardecl
                                             #:maximum-iterations mi
