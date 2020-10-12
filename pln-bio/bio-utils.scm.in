@@ -189,7 +189,7 @@
 "
   (let* (;; Load file in a temporary atomspace
          (base-as (cog-set-atomspace! (cog-new-atomspace)))
-         (dummy (load-file filename))   ; Speed load using persist-file module
+         (dummy (load-file (get-kb-path filename)))   ; Speed load using persist-file module
 
          ;; Filter in atoms satisfying pred
          (atoms (filter pred-in? (cog-get-atoms 'Atom #t)))

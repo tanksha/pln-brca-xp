@@ -1,6 +1,6 @@
 ;; Crisp rules about translating a link into another link
 
-(load-from-path "rules/rule-utils.scm")
+(use-modules (pln-bio rule-utils))
 
 ;; Helpers
 (define ConceptT (TypeInh "ConceptNode"))

@@ -1,6 +1,6 @@
 ;; Crisp rules about transitivity of predicates or inheritance links
 
-(load-from-path "rules/rule-utils.scm")
+(use-modules (pln-bio rule-utils))
 
 ;; Helpers
 (define ConceptT (TypeInh "ConceptNode"))
