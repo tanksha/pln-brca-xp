@@ -84,9 +84,9 @@
 (define (subset->attraction)
    ;; Run backward chainer to produce attraction links. 
 
-    (filter all-nodes-non-null-mean? (pln-bc target #:vardecl vardecl
+    (filter all-nodes-non-null-mean? (cog-outgoing-set (pln-bc target #:vardecl vardecl
                                             #:maximum-iterations mi
-                                            #:complexity-penalty cp)))
+                                            #:complexity-penalty cp))))
 
 
 (define* (preprocess kbs #:key (filter-out #f))
