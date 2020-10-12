@@ -1,0 +1,347 @@
+;; Set of utilities for filtering the dataset and the results
+
+;; Load modules
+(define-module (pln-bio bio-utils)
+    #:use-module (srfi srfi-1)
+    #:use-module (opencog)
+    #:use-module (opencog exec)
+    #:use-module (opencog persist-file) 
+    #:use-module (opencog ure)
+    #:use-module (opencog logger)
+    #:use-module (opencog randgen)
+    #:use-module (opencog bioscience)
+    #:export (load-kbs))
+
+;; For debugging
+;; (cog-logger-set-stdout! #t)
+;; (cog-logger-set-sync! #t)
+
+;; Helpers
+(define-public (true-predicate x) #t)
+
+(define-public (false-predicate x) #f)
+
+(define-public (null-mean? x)
+  (and (cog-atom? x) (< (cog-mean x) 1e-16)))
+
+(define-public (non-null-mean? x)
+  (and (cog-atom? x) (< 1e-16 (cog-mean x))))
+
+;; Whether all nodes of the given link have non null mean
+(define-public (all-nodes-non-null-mean? LINK)
+  (let* ((nodes (cog-get-all-nodes LINK)))
+    (every non-null-mean? nodes)))
+
+(define-public (scope? x)
+  (cog-subtype? 'ScopeLink (cog-type x)))
+
+(define-public (lst? x)
+  (cog-subtype? 'ListLink (cog-type x)))
+
+(define-public (and? x)
+  (cog-subtype? 'AndLink (cog-type x)))
+
+(define-public (present? x)
+  (cog-subtype? 'PresentLink (cog-type x)))
+
+(define-public (eval? x)
+  (cog-subtype? 'EvaluationLink (cog-type x)))
+
+(define-public (eval-pred-name? name x)
+  (and (eval? x)
+       (equal? (cog-name (gar x)) name)))
+
+(define-public (eval-GO_namespace? x)
+  (eval-pred-name? "GO_namespace" x))
+
+(define-public (member? x)
+  (cog-subtype? 'MemberLink (cog-type x)))
+
+(define-public (subset? x)
+  (cog-subtype? 'SubsetLink (cog-type x)))
+
+;; TODO: better use scheme basename function
+(define-public (rm-extension fn ext)
+  (if (string-suffix? (string-append "." ext) fn)
+      (substring fn 0 (- (string-length fn) 4))
+      fn))
+
+(define-public (string-starts-with? str prefix)
+  (if (< (string-length str) (string-length prefix))
+    #f
+    (let* ((start 0)
+           (end (string-length prefix))
+           (str-prefix (substring str start end)))
+      (equal? str-prefix prefix))))
+
+(define-public (smp? A)
+  (and (eq? (cog-type A) 'ConceptNode)
+       (string-starts-with? (cog-name A) "SMP0")))
+
+(define-public (go? A)
+  (and (or (eq? (cog-type A) 'BiologicalProcessNode) (eq? (cog-type A) 'MolecularFunctionNode) (eq? (cog-type A) 'CellularComponentNode))
+       (string-starts-with? (cog-name A) "GO:")))
+
+(define-public (gene? A)
+  (and (eq? (cog-type A) 'GeneNode)))
+
+(define-public (GO_term? A)
+  (and (or (eq? (cog-type A) 'BiologicalProcessNode) (eq? (cog-type A) 'MolecularFunctionNode) (eq? (cog-type A) 'CellularComponentNode))
+       (equal? (cog-name A) "GO_term")))
+
+(define-public (inheritance-GO_term? A)
+  (and (eq? (cog-type A) 'InheritanceLink)
+       (GO_term? (gdr A))))
+
+(define-public (get-smps)
+  (filter smp? (cog-get-atoms 'ConceptNode)))
+
+(define-public (get-genes)
+  (cog-get-atoms 'GeneNode))
+
+(define-public (get-go-categories_cc)
+  (filter go? (cog-get-atoms 'CellularComponentNode)))
+
+(define-public (get-go-categories_mf)
+  (filter go? (cog-get-atoms 'MolecularFunctionNode)))
+
+(define-public (get-go-categories_bp)
+  (filter go? (cog-get-atoms 'BiologicalProcessNode)))
+
+(define-public (get-go-categories)
+  (append (get-go-categories_cc) (get-go-categories_bp) (get-go-categories_mf)))
+
+(define-public (pathway? A) (or (eq? (cog-type A) 'SmpNode) (eq? (cog-type A) 'ReactomeNode)))
+
+(define-public (get-pathways)
+  (cog-get-atoms 'PathwayNode)
+)
+
+(define (go-subset? S)
+  (and (subset? S) (go? (gar S)) (go? (gdr S))))
+
+(define (pathway-subset? S)
+  (and (subset? S) (pathway? (gar S)) (pathway? (gdr S))))
+
+(define-public (get-go-subsets)
+  (filter go-subset? (cog-get-atoms 'SubsetLink)))
+
+(define-public (get-pathway-subsets)
+  (filter pathway-subset? (cog-get-atoms 'SubsetLink)))
+
+(define-public (get-members C)
+"
+  Given a concept node C, return all its members
+"
+  (let* ((member-links (cog-filter 'MemberLink (cog-incoming-set C)))
+         (member-of-C? (lambda (x) (equal? C (gdr x))))
+         (members (map gar (filter member-of-C? member-links))))
+    members))
+
+(define-public (get-member-links EL-TYPE C-TYPE)
+  (let* ((mbr-links (cog-get-atoms 'MemberLink #f))
+         (valid-types? (lambda (x) (and (equal? (cog-type (gar x)) EL-TYPE)
+                                        (equal? (cog-type (gdr x)) C-TYPE)))))
+    (filter valid-types? mbr-links)))
+
+(define-public (get-cardinality C)
+"
+  Giveb a concept node C, return its number of members
+"
+  (length (get-members C)))
+
+(define-public (number->hexstr n)
+  (format #f "~x" n))
+
+(define-public (bool->string b)
+  (if b "t" "f"))
+
+(define-public (get-pattern eval-pattern)
+  (cog-outgoing-atom (gdr eval-pattern) 0))
+
+(define-public (get-body pattern)
+  (cog-outgoing-atom pattern 1))
+
+(define-public (get-clauses body)
+  (if (or (eq? (cog-type body) 'PresentLink)
+          (eq? (cog-type body) 'AndLink))
+      (cog-outgoing-set body)
+      body))
+
+(define (mk-rand-selector prob)
+"
+  Return a random selector that is true with the given probability
+"
+  (lambda (x) (cond [(= prob 0.0) #f]
+                    [(= prob 1.0) #t]
+                    [else (<= (cog-randgen-randfloat) prob)])))
+
+(define (load-filter-in pred-in? filename)
+"
+  1. Load filename in an auxiliaury atomspace
+  2. Grab all atoms
+  3. Only retain the valid ones according to pred-in?
+  4. Copy the valid atoms in the current atomspace
+  5. Return the list of the copied atoms
+
+  An auxiliary atomspace is used to avoid deleting atoms, which can be
+  quite costly.
+"
+  (let* (;; Load file in a temporary atomspace
+         (base-as (cog-set-atomspace! (cog-new-atomspace)))
+         (dummy (load-file filename))   ; Speed load using persist-file module
+
+         ;; Filter in atoms satisfying pred
+         (atoms (filter pred-in? (cog-get-atoms 'Atom #t)))
+
+         ;; Copy admissible atoms in the base atomspace
+         (base-atoms (cog-cp base-as atoms))
+
+         ;; Discard the temporary atomspace
+         (dummy (cog-set-atomspace! base-as)))
+    base-atoms))
+
+(define* (load-kb kb-filename
+                  #:key
+                  (subsmp 1)
+                  (filter-in true-predicate)
+		  (filter-out false-predicate))
+"
+  Load knowledge base, optionally perform some filtering and return
+  a list of all atoms (not just root atoms) loaded.
+
+  Note that filters only affect root atoms as far as their
+  belonging to the atomspace is concerned, however they affect
+  all atoms as far as their belonging to the resulting list is
+  concerned. TODO: maybe we want to return only roots, though
+  that might be undesirable if the list is passed as db to the
+  pattern miner and we want to mine subgraphs.
+
+  Usage: (load-kb kb-filename
+                  #:subsmp ssp
+                  #:filter-in pred-in?
+                  #:filter-out pred-out?)
+
+  kb-filename: Scheme file containing the knowledge base.
+
+  ssp [optional, default=1]: Probability of randomly retaining
+  atoms.
+
+  pred-in? [optional, default=true-predicate]: Predicate that
+  atoms must satisfy in order to be retained.
+
+  pred-out? [optional, default=false-predicate]: Predicate that
+  atoms must contradict in order to be retained.
+"
+  (let* (;; Define filter for admissible atoms
+         (rand-selected? (mk-rand-selector subsmp))
+         (admissible? (lambda (x) (and
+				    (rand-selected? x)
+				    (filter-in x)
+				    (not (filter-out x))))))
+    (load-filter-in admissible? kb-filename)))
+
+(define* (load-kbs kbs-filenames
+                   #:key
+                   (subsmp 1)
+		   (filter-in true-predicate)
+                   (filter-out false-predicate))
+"
+  Like load-kb but takes a list of filenames.
+
+  Note that filters only affect root atoms as far as their
+  belonging to the atomspace is concerned, however they affect
+  all atoms as far as their belonging to the resulting list is
+  concerned. TODO: maybe we want to return only roots, though
+  that might be undesirable if the list is passed as db to the
+  pattern miner and we want to mine subgraphs.
+
+  Usage: (load-kbs kb-filenames
+                   #:subsmp ssp
+                   #:filter-in pred-in?
+                   #:filter-out pred-out?)
+
+  kb-filenames: Scheme list of files containing knowledge bases.
+
+  ssp [optional, default=1]: Probability of randomly retaining atoms.
+
+  pred-in? [optional, default=true-predicate]: Predicate that atoms
+  must satisfy in order to be retained.
+
+  pred-out? [optional, default=false-predicate]: Predicate that atoms
+  must contradict in order to be retained.
+"
+  (concatenate (map (lambda (x) (load-kb x
+					 #:subsmp subsmp
+					 #:filter-in filter-in
+           #:filter-out filter-out))
+           kbs-filenames)))
+
+(define (add-extra-smp-go-terms)
+  ;; Small Molecule Pathway concept
+  (let* ((smps (get-smps))
+         (smp-cpt (Concept "SMP_term"))
+         (gos (get-go-categories))
+         (go-cpt (Concept "GO_term")))
+    (append (map (lambda (x) (Inheritance x smp-cpt)) smps)
+            (map (lambda (x) (Inheritance x go-cpt)) gos))))
+
+(define-public (write-atoms-to-file filename a-lst)
+"
+  Write a list of atoms into filename.
+"
+  (let* ((port (open-file filename "a")))
+    (for-each (lambda (x) (write x port)) a-lst)
+    (close-port port))
+
+  *unspecified*)
+
+(define-public (true-subset-inverse S)
+"
+  Given a subset with a true value
+
+  Subset (stv 1 1)
+    A <ATV>
+    B <BTV>
+
+  Return
+
+  Subset <TV>
+    B <BTV>
+    A <ATV>
+
+  where TV is calculated as follows
+
+  TV.strength = (ATV.strength * ATV.count) / (BTV.strength * BTV.count)
+  TV.count = (BTV.strength * BTV.count)
+
+  Which is technically correct since (Subset A B) is true.
+"
+(let* ((A (gar S))
+       (B (gdr S))
+       (ATV (cog-tv A))
+       (BTV (cog-tv B))
+       (A-positive-count (* (cog-tv-mean ATV) (cog-tv-count ATV)))
+       (B-positive-count (* (cog-tv-mean BTV) (cog-tv-count BTV)))
+       (TV-strength (if (< 0 B-positive-count)
+                        (exact->inexact (/ A-positive-count B-positive-count))
+                        1))
+       (TV-count B-positive-count)
+       (TV-confidence (count->confidence TV-count))
+       (TV (stv TV-strength TV-confidence)))
+  (Subset TV B A)))
+
+(define-public (gt-zero-confidence? A)
+"
+  Return #t iff A's confidence is greater than 0
+"
+  (> (cog-confidence A) 0))
+
+(define-public (gt-zero-mean? A)
+"
+  Return #t iff A's mean is greater than 0
+"
+  (> (cog-mean A) 0))
+
+(define-public (gt-zero-mean-and-confidence? A)
+  (and (gt-zero-confidence? A) (gt-zero-mean? A)))
