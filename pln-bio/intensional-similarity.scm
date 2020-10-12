@@ -1,4 +1,4 @@
-(define-module (pln-bio main)
+(define-module (pln-bio intensional-similarity)
     #:use-module (opencog)
     #:use-module (opencog exec)
     #:use-module (opencog randgen)
@@ -10,8 +10,8 @@
     #:use-module (pln-bio preprocess)
 )
 
-(define (go-intentional-similarity kbs)
-   (define log-filename "log/intentional-reasoning-test.log")
+(define-public (go-intentional-similarity kbs)
+   (define log-filename "intentional-reasoning-test.log")
 
     ;; (cog-logger-set-timestamp! #f)
     ;; (cog-logger-set-sync! #t)

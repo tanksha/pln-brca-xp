@@ -345,3 +345,11 @@
 
 (define-public (gt-zero-mean-and-confidence? A)
   (and (gt-zero-confidence? A) (gt-zero-mean? A)))
+
+(define-public (get-kb-path kb-name)
+    (let ((path (string-append @kbsdir@ kb-name)))
+      (if (file-exists? path) path #f)))
+
+(define-public (get-rule-path rule-name)
+  (let ((path (string-append @rulesdir@ rule-name)))
+      (if (file-exists? path) path #f)))

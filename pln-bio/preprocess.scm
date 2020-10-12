@@ -45,8 +45,8 @@
 
         ;; Load PLN
         (pln-load 'empty)
-        (pln-load-from-path "rules/translation.scm")
-        (pln-load-from-path "rules/transitivity.scm")
+        (pln-load-from-path (get-rule-path "translation.scm"))
+        (pln-load-from-path (get-rule-path "transitivity.scm"))
         (pln-add-rule 'present-inheritance-to-subset-translation)
         (pln-add-rule 'present-subset-transitivity)
         (pln-add-rule 'present-mixed-member-subset-transitivity)
