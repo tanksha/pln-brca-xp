@@ -10,17 +10,21 @@
     #:use-module (pln-bio preprocess)
 )
 
+(define X (Variable "$x"))
+(define Y (Variable "$y"))
+(define target (IntensionalSimilarity X Y))
+
 (define-public (go-intentional-similarity kbs)
    (define log-filename "intentional-reasoning-test.log")
 
     ;; (cog-logger-set-timestamp! #f)
     ;; (cog-logger-set-sync! #t)
-    (cog-logger-set-level! "debug")
+    (cog-logger-set-level! "info")
     (cog-logger-set-filename! log-filename)
     ;; (ure-logger-set-timestamp! #f)
     ;; (ure-logger-set-sync! #t)
-    (ure-logger-set-level! "debug")
-    (ure-logger-set-filename! log-filename)
+    ; (ure-logger-set-level! "debug")
+    ; (ure-logger-set-filename! log-filename)
 
     (let* ((ss 0.001) (rs 0) (mi 100) (cp 1)
            (param-str (string-append
@@ -32,12 +36,12 @@
             (filter-out (lambda (x)
                             (or (GO_term? x)
                                 (inheritance-GO_term? x))))
-          (filename (preprocess kbs #:filter-out filter-out))
-          (target (IntensionalSimilarity (Variable "$x") (Variable "$y"))))
+          (filename (preprocess kbs #:filter-out filter-out)))
 
         ;;clear the atomspace
         (clear)
         ;; Load PLN
+        (cog-logger-info "Running BC: Attraction->IntensionalSimilarity")
         (pln-load 'empty)
         (pln-add-rule 'intensional-inheritance-direct-introduction)
         (pln-add-rule 'intensional-similarity-direct-introduction)
@@ -45,4 +49,5 @@
         
         (load-kbs filename #:subsmp ss)
 
-        (write-atoms-to-file output-file (cog-outgoing-set (pln-bc target #:maximum-iterations mi #:complexity-penalty cp)))))
+        (write-atoms-to-file output-file (cog-outgoing-set (pln-bc target #:maximum-iterations mi #:complexity-penalty cp)))
+        (cog-logger-info "Done!")))

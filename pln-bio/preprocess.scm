@@ -56,6 +56,7 @@
         (pln-add-rule 'present-inheritance-to-subset-translation)
         (pln-add-rule 'present-subset-transitivity)
         (pln-add-rule 'present-mixed-member-subset-transitivity)
+        (pln-add-rule 'subset-direct-introduction-rule)
         (cog-logger-info "PLN Rules loaded.")
         (get-results-with-tvs (pln-fc source
             #:vardecl vardecl
@@ -83,7 +84,9 @@
 
 (define (subset->attraction)
    ;; Run backward chainer to produce attraction links. 
-
+    ;; Add required PLN rules
+    (pln-add-rule 'subset-condition-negation)
+    (pln-add-rule 'subset-attraction-introduction)
     (filter all-nodes-non-null-mean? (cog-outgoing-set (pln-bc target #:vardecl vardecl
                                             #:maximum-iterations mi
                                             #:complexity-penalty cp))))
@@ -104,10 +107,10 @@
     (write-atoms-to-file scm-filename (calculate-go/pathway-tvs (get-go-categories)))
     (cog-logger-info "Calculating Pathway tvs")
     (write-atoms-to-file scm-filename (calculate-go/pathway-tvs (get-pathways)))
-    (cog-logger-info "Getting inverse GO Subsets")
-    (write-atoms-to-file scm-filename (get-inverse-subsets (get-go-subsets)))
-    (cog-logger-info "Getting inverse Pathway Subsets")
-    (write-atoms-to-file scm-filename (get-inverse-subsets (get-pathway-subsets)))
+    ; (cog-logger-info "Getting inverse GO Subsets")
+    ; (write-atoms-to-file scm-filename (get-inverse-subsets (get-go-subsets)))
+    ; (cog-logger-info "Getting inverse Pathway Subsets")
+    ; (write-atoms-to-file scm-filename (get-inverse-subsets (get-pathway-subsets)))
     (cog-logger-info "Running BC: subset->attraction")
     (write-atoms-to-file scm-filename (subset->attraction))
     (cog-logger-info "Preprocessing done!")
