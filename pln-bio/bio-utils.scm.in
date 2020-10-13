@@ -75,12 +75,10 @@
       (equal? str-prefix prefix))))
 
 (define-public (smp? A)
-  (and (eq? (cog-type A) 'ConceptNode)
-       (string-starts-with? (cog-name A) "SMP0")))
+  (eq? (cog-type A) 'SmpNode))
 
 (define-public (go? A)
-  (and (or (eq? (cog-type A) 'BiologicalProcessNode) (eq? (cog-type A) 'MolecularFunctionNode) (eq? (cog-type A) 'CellularComponentNode))
-       (string-starts-with? (cog-name A) "GO:")))
+  (or (eq? (cog-type A) 'BiologicalProcessNode) (eq? (cog-type A) 'MolecularFunctionNode) (eq? (cog-type A) 'CellularComponentNode)))
 
 (define-public (gene? A)
   (and (eq? (cog-type A) 'GeneNode)))
@@ -94,7 +92,7 @@
        (GO_term? (gdr A))))
 
 (define-public (get-smps)
-  (filter smp? (cog-get-atoms 'ConceptNode)))
+  (cog-get-atoms 'SmpNode))
 
 (define-public (get-genes)
   (cog-get-atoms 'GeneNode))
@@ -114,7 +112,7 @@
 (define-public (pathway? A) (or (eq? (cog-type A) 'SmpNode) (eq? (cog-type A) 'ReactomeNode)))
 
 (define-public (get-pathways)
-  (cog-get-atoms 'PathwayNode)
+  (append (cog-get-atoms 'ReactomeNode) (cog-get-atoms 'SmpNode))
 )
 
 (define (go-subset? S)

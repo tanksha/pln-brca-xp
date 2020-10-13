@@ -56,7 +56,8 @@
         (pln-add-rule 'present-inheritance-to-subset-translation)
         (pln-add-rule 'present-subset-transitivity)
         (pln-add-rule 'present-mixed-member-subset-transitivity)
-        (pln-add-rule 'subset-direct-introduction-rule)
+        (pln-load-from-path "opencog/pln/rules/extensional/subset-direct-introduction.scm")
+        (pln-add-rule 'subset-direct-introduction)
         (cog-logger-info "PLN Rules loaded.")
         (get-results-with-tvs (pln-fc source
             #:vardecl vardecl
