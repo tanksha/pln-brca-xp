@@ -35,19 +35,16 @@
             (output-file (string-append "results/intentional-reasoning-test-asv2" param-str ".scm"))
             (filter-out (lambda (x)
                             (or (GO_term? x)
-                                (inheritance-GO_term? x))))
-          (filename (preprocess kbs #:filter-out filter-out)))
+                                (inheritance-GO_term? x)))))
 
-        ;;clear the atomspace
-        (clear)
+        ;;Preprocessing step
+        (preprocess kbs #:filter-out filter-out)
         ;; Load PLN
         (cog-logger-info "Running BC: Attraction->IntensionalSimilarity")
         (pln-load 'empty)
         (pln-add-rule 'intensional-inheritance-direct-introduction)
         (pln-add-rule 'intensional-similarity-direct-introduction)
         (pln-add-rule 'intensional-difference-direct-introduction)
-        
-        (load-kbs (list filename) #:subsmp ss)
 
         (write-atoms-to-file output-file (cog-outgoing-set (pln-bc target #:maximum-iterations mi #:complexity-penalty cp)))
         (cog-logger-info "Done!")))
