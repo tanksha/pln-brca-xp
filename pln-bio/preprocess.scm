@@ -51,8 +51,8 @@
         ;; Load PLN
         (cog-logger-info "Loading PLN rules")
         (pln-load 'empty)
-        (pln-load-from-file (get-rule-path "translation.scm"))
-        (pln-load-from-file (get-rule-path "transitivity.scm"))
+        (pln-load-from-file (get-full-path "rules/translation.scm"))
+        (pln-load-from-file (get-full-path "rules/transitivity.scm"))
         (pln-add-rule 'present-inheritance-to-subset-translation)
         (pln-add-rule 'present-subset-transitivity)
         (pln-add-rule 'present-mixed-member-subset-transitivity)

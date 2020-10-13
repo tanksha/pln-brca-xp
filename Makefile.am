@@ -10,14 +10,12 @@ SOURCES = \
     pln-bio/intensional-similarity.scm
 
 
-abstopdir=$(abspath $(lastword $(srcdir)))
-rulesdir = $(abstopdir)/rules/
-kbsdir = $(abstopdir)/kbs/
+abstopdir=$(abspath $(lastword $(srcdir)))/
 
 
 pln-bio/bio-utils.scm: Makefile pln-bio/bio-utils.scm.in
 	mkdir -p pln-bio
-	sed -e "s|@kbsdir\@|\"$(kbsdir)\"|; s|@rulesdir\@|\"$(rulesdir)\"|" \
+	sed -e "s|@abstopdir\@|\"$(abstopdir)\"|" \
 		$(srcdir)/pln-bio/bio-utils.scm.in > pln-bio/bio-utils.scm
 
 clean-go:

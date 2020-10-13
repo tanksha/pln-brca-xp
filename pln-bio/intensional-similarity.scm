@@ -47,7 +47,7 @@
         (pln-add-rule 'intensional-similarity-direct-introduction)
         (pln-add-rule 'intensional-difference-direct-introduction)
         
-        (load-kbs filename #:subsmp ss)
+        (load-kbs (list filename) #:subsmp ss)
 
         (write-atoms-to-file output-file (cog-outgoing-set (pln-bc target #:maximum-iterations mi #:complexity-penalty cp)))
         (cog-logger-info "Done!")))

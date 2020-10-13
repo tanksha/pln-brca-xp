@@ -187,7 +187,7 @@
 "
   (let* (;; Load file in a temporary atomspace
          (base-as (cog-set-atomspace! (cog-new-atomspace)))
-         (dummy (load-file (get-kb-path filename)))   ; Speed load using persist-file module
+         (dummy (load-file (get-full-path filename)))   ; Speed load using persist-file module
 
          ;; Filter in atoms satisfying pred
          (atoms (filter pred-in? (cog-get-atoms 'Atom #t)))
@@ -344,10 +344,6 @@
 (define-public (gt-zero-mean-and-confidence? A)
   (and (gt-zero-confidence? A) (gt-zero-mean? A)))
 
-(define-public (get-kb-path kb-name)
-    (let ((path (string-append @kbsdir@ kb-name)))
-      (if (file-exists? path) path #f)))
-
-(define-public (get-rule-path rule-name)
-  (let ((path (string-append @rulesdir@ rule-name)))
+(define-public (get-full-path file-name)
+    (let ((path (string-append @abstopdir@ file-name)))
       (if (file-exists? path) path #f)))
