@@ -10,9 +10,13 @@
     #:use-module (pln-bio preprocess)
 )
 
-(define X (Variable "$x"))
-(define Y (Variable "$y"))
+(define X (Variable "$X"))
+(define Y (Variable "$Y"))
+(define ConceptT (TypeInh "ConceptNode"))
 (define target (IntensionalSimilarity X Y))
+(define vardecl (VariableSet
+                  (TypedVariable X ConceptT)
+                  (TypedVariable Y ConceptT)))
 
 (define-public (go-intentional-similarity kbs)
    (define log-filename "intentional-reasoning-test.log")
@@ -46,5 +50,7 @@
         (pln-add-rule 'intensional-similarity-direct-introduction)
         (pln-add-rule 'intensional-difference-direct-introduction)
 
-        (write-atoms-to-file output-file (cog-outgoing-set (pln-bc target #:maximum-iterations mi #:complexity-penalty cp)))
+        (write-atoms-to-file output-file (cog-outgoing-set (pln-bc target 
+            #:vardecl vardecl
+            #:maximum-iterations mi #:complexity-penalty cp)))
         (cog-logger-info "Done!")))
