@@ -42,8 +42,9 @@
 
     (define (get-results-with-tvs result-lst) 
         (let ((all-mbrs (append (cog-outgoing-set result-lst)
-                    (get-member-links 'GeneNode 'MolecularFunctionNode)
-                    (get-member-links 'GeneNode 'CellularComponentNode)
+                    (get-member-links 'GeneNode 'ReactomeNode)
+                    (get-member-links 'GeneNode 'SmpNode)
+                    (get-member-links 'GeneNode 'PharmGkbNode)
                     (get-member-links 'GeneNode 'BiologicalProcessNode))))
             
             (filter all-nodes-non-null-mean? (map (lambda (x) (cog-set-tv! x (stv 1 1))) all-mbrs))))
@@ -56,8 +57,6 @@
         (pln-add-rule 'present-inheritance-to-subset-translation)
         (pln-add-rule 'present-subset-transitivity)
         (pln-add-rule 'present-mixed-member-subset-transitivity)
-        (pln-load-from-path "opencog/pln/rules/extensional/subset-direct-introduction.scm")
-        (pln-add-rule 'subset-direct-introduction)
         (cog-logger-info "PLN Rules loaded.")
         (get-results-with-tvs (pln-fc source
             #:vardecl vardecl
@@ -81,25 +80,33 @@
 
 
 
-(define target (Attraction X Y))
+(define (generate-subset)
+    (pln-load-from-path "opencog/pln/rules/extensional/subset-direct-introduction.scm")
+    (pln-add-rule 'subset-direct-introduction)
+    (define target (Subset X Y))
+    (filter all-nodes-non-null-mean? (cog-outgoing-set (pln-bc target #:vardecl vardecl
+                                            #:maximum-iterations mi
+                                            #:complexity-penalty cp)))
+)
 
 (define (subset->attraction)
    ;; Run backward chainer to produce attraction links. 
     ;; Add required PLN rules
     (pln-add-rule 'subset-condition-negation)
     (pln-add-rule 'subset-attraction-introduction)
+    (define target (Attraction X Y))
     (filter all-nodes-non-null-mean? (cog-outgoing-set (pln-bc target #:vardecl vardecl
                                             #:maximum-iterations mi
                                             #:complexity-penalty cp))))
 
 
-(define* (preprocess kbs #:key (filter-out #f))
+(define* (preprocess kbs #:key (filter-in #f))
    (let ((scm-filename (string-append "results/preprocess-kbs-asv2" param-str ".scm")))
 
     ;;load kbs
     (cog-logger-info "Loading kbs")
-    (if filter-out
-        (load-kbs kbs #:subsmp ss #:filter-out filter-out)
+    (if filter-in
+        (load-kbs kbs #:subsmp ss #:filter-in filter-in)
         (load-kbs kbs #:subsmp ss))
 
     (cog-logger-info "Running FC: inheritance->subset")
@@ -108,8 +115,8 @@
     (write-atoms-to-file scm-filename (calculate-go/pathway-tvs (get-go-categories)))
     (cog-logger-info "Calculating Pathway tvs")
     (write-atoms-to-file scm-filename (calculate-go/pathway-tvs (get-pathways)))
-    ; (cog-logger-info "Getting inverse GO Subsets")
-    ; (write-atoms-to-file scm-filename (get-inverse-subsets (get-go-subsets)))
+    (cog-logger-info "Running BC: subset-generation")
+    (write-atoms-to-file scm-filename (generate-subset))
     ; (cog-logger-info "Getting inverse Pathway Subsets")
     ; (write-atoms-to-file scm-filename (get-inverse-subsets (get-pathway-subsets)))
     (cog-logger-info "Running BC: subset->attraction")

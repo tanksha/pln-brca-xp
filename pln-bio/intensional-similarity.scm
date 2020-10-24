@@ -18,7 +18,7 @@
                   (TypedVariable X ConceptT)
                   (TypedVariable Y ConceptT)))
 
-(define-public (go-intentional-similarity kbs)
+(define-public (go-pathway-intentional-similarity kbs)
    (define log-filename "intentional-reasoning-test.log")
 
     ;; (cog-logger-set-timestamp! #f)
@@ -36,19 +36,18 @@
                    "-ss=" (number->string ss)
                    "-mi=" (number->string mi)
                    "-cp=" (number->string cp)))
-            (output-file (string-append "results/intentional-reasoning-test-asv2" param-str ".scm"))
-            (filter-out (lambda (x)
-                            (or (GO_term? x)
-                                (inheritance-GO_term? x)))))
+            (output-file (string-append "results/pathway-go-bp-similarity" param-str ".scm"))
+            (filter-in (lambda (x)
+                            (or (go_bp? x)  (inheritance-GO_bp? x)
+                                (pathway? x) (pathway-inheritance? x) 
+                                (gene-memberln? x)))))
 
         ;;Preprocessing step
-        (preprocess kbs #:filter-out filter-out)
+        (preprocess kbs #:filter-in filter-in)
         ;; Load PLN
         (cog-logger-info "Running BC: Attraction->IntensionalSimilarity")
         (pln-load 'empty)
-        (pln-add-rule 'intensional-inheritance-direct-introduction)
         (pln-add-rule 'intensional-similarity-direct-introduction)
-        (pln-add-rule 'intensional-difference-direct-introduction)
 
         (write-atoms-to-file output-file (cog-outgoing-set (pln-bc target 
             #:vardecl vardecl

@@ -80,16 +80,22 @@
 (define-public (go? A)
   (or (eq? (cog-type A) 'BiologicalProcessNode) (eq? (cog-type A) 'MolecularFunctionNode) (eq? (cog-type A) 'CellularComponentNode)))
 
+(define-public (go_bp? A)
+  (eq? (cog-type A) 'BiologicalProcessNode))
+
 (define-public (gene? A)
   (and (eq? (cog-type A) 'GeneNode)))
 
 (define-public (GO_term? A)
-  (and (or (eq? (cog-type A) 'BiologicalProcessNode) (eq? (cog-type A) 'MolecularFunctionNode) (eq? (cog-type A) 'CellularComponentNode))
-       (equal? (cog-name A) "GO_term")))
+  (and (or (eq? (cog-type A) 'BiologicalProcessNode) (eq? (cog-type A) 'MolecularFunctionNode) (eq? (cog-type A) 'CellularComponentNode))))
 
 (define-public (inheritance-GO_term? A)
   (and (eq? (cog-type A) 'InheritanceLink)
        (GO_term? (gdr A))))
+
+(define-public (inheritance-GO_bp? A)
+  (and (eq? (cog-type A) 'InheritanceLink)
+        (go_bp? (gdr A))))
 
 (define-public (get-smps)
   (cog-get-atoms 'SmpNode))
@@ -109,11 +115,19 @@
 (define-public (get-go-categories)
   (append (get-go-categories_cc) (get-go-categories_bp) (get-go-categories_mf)))
 
-(define-public (pathway? A) (or (eq? (cog-type A) 'SmpNode) (eq? (cog-type A) 'ReactomeNode)))
+(define-public (pathway? A) (or (eq? (cog-type A) 'SmpNode) (eq? (cog-type A) 'ReactomeNode) (eq? (cog-type A) 'PharmGkbNode)))
+
+(define-public (pathway-inheritance? A)
+  (and (eq? (cog-type A) 'InheritanceLink)
+    (pathway? (gdr A))))
+
+(define-public (gene-memberln? A)
+  (and (eq? (cog-type A) 'MemberLink)
+    (eq? (cog-type (gar A)) 'GeneNode)
+    (or (pathway? (gdr A)) (go_bp? (gdr A)))))
 
 (define-public (get-pathways)
-  (append (cog-get-atoms 'ReactomeNode) (cog-get-atoms 'SmpNode))
-)
+  (append (cog-get-atoms 'ReactomeNode) (cog-get-atoms 'SmpNode) (cog-get-atoms 'PharmGkbNode)))
 
 (define (go-subset? S)
   (and (subset? S) (go? (gar S)) (go? (gdr S))))
