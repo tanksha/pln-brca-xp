@@ -7,6 +7,7 @@ SOURCES = \
     pln-bio/ure-utils.scm \
 	pln-bio/rule-utils.scm \
     pln-bio/preprocess.scm \
+	pln-bio/expr.scm \
     pln-bio/intensional-similarity.scm
 
 
