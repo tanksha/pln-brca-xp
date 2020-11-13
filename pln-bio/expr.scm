@@ -53,8 +53,6 @@
                 (Variable "$num")
                 (ConceptNode "0"))))))
 
-
-
 (define-public (calculate-expression-tv gene patient value overexpr-tv?)
     (let* ((overexpr? (= (num-node->num overexpr-tv?) 1))
           (quantiles (schema-list->nums (get-schema-lst gene overexpr?)))
@@ -73,39 +71,16 @@
                 patient))))
 
 (define-public (overexpression-dist)
-    (map (lambda (gene) 
+    (filter (lambda (gene) 
         (create-schema-dist gene (get-overexpress-dist gene) #t)) (cog-get-atoms 'GeneNode)))
 
 (define-public (underexpression-dist)
     (map (lambda (gene) 
         (create-schema-dist gene (get-underexpress-dist gene) #f)) (cog-get-atoms 'GeneNode)))
 
-(define-public (get-overexpress-dist gene) 
-    (cog-outgoing-set (cog-execute! (Bind
-        (VariableList
-            (TypedVariable (Variable "$patient") (Type "ConceptNode"))
-            (TypedVariable (Variable "$num") (Type "NumberNode")))
-        (Present 
-            (ExecutionLink
-                (LazyExecutionOutputLink
-                    (SchemaNode "make-overexpression-schema-for-gene")
-                    gene)
-                (Variable "$patient")
-                (Variable "$num")))
-
-        (ExecutionLink
-                (LazyExecutionOutputLink
-                    (SchemaNode "make-overexpression-schema-for-gene")
-                    gene)
-                (Variable "$patient")
-                (Variable "$num"))))))
-
 (define-public (create-schema-dist gene expr-lst overexpr?)
-    (define (get-values)
-        (map (lambda (expr)
-            (string->number (cog-name (caddr (cog-outgoing-set expr))))) expr-lst))
-
-    (let* ((sorted-vals (sort (get-values) less))
+    (if (null? expr-lst) #f
+        (let* ((sorted-vals (sort (get-values expr-lst) less))
             (quantiles (get-quantile-borders sorted-vals bin-size))
             (num-nodes (map (lambda (q) (Number q)) quantiles)))
         (if overexpr?
@@ -120,7 +95,31 @@
                     (SchemaNode "make-underexpression-schema-for-gene")
                     gene)
                 (SchemaValueListLink
-                    num-nodes)))))
+                    num-nodes))))))
+
+
+(define-public (get-overexpress-dist gene) 
+    (cog-outgoing-set (cog-execute! (Bind
+        (VariableList
+            (TypedVariable (Variable "$patient") (Type "ConceptNode"))
+            (TypedVariable (Variable "$num") (Type "NumberNode")))
+        (Present 
+            (ExecutionLink
+                (LazyExecutionOutputLink
+                    (SchemaNode "make-overexpression-schema-for-gene")
+                    gene)
+                (Variable "$patient")
+                (Variable "$num"))
+            (Member
+                gene 
+                (Concept "profiled-genes")))
+
+        (ExecutionLink
+                (LazyExecutionOutputLink
+                    (SchemaNode "make-overexpression-schema-for-gene")
+                    gene)
+                (Variable "$patient")
+                (Variable "$num"))))))
 
 (define-public (get-underexpress-dist gene) 
     (cog-outgoing-set (cog-execute! (Bind
@@ -133,7 +132,10 @@
                     (SchemaNode "make-underexpression-schema-for-gene")
                     gene)
                 (Variable "$patient")
-                (Variable "$num")))
+                (Variable "$num"))
+            (Member
+                gene 
+                (Concept "profiled-genes")))
                     
         (ExecutionLink
                 (LazyExecutionOutputLink
@@ -219,6 +221,10 @@
         (cons (list-ref lst closest-index) (cons (list-ref lst (+ closest-index 1)) closest-index))))
 
 (define (less x y) (if (< x y) #t #f))
+
+(define (get-values expr-lst)
+        (map (lambda (expr)
+            (string->number (cog-name (caddr (cog-outgoing-set expr))))) expr-lst))
 
 (define (get-new-val old-val vl-cl n-cl)
     ;;v_i_new = (v_i * n_i / (n_i + 1)) + (v / (n_i + 1))
