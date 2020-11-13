@@ -51,11 +51,11 @@
                                 (VariableNode "$G"))
                                 patient-var))))                
                 patient-var
-                bp-var))))
+                bp-var)))))
 
 (define-public (generate-subset-tv conclusion . premises)
     (if (= (length premises) 2)
-        (let* ((B (car premises))
+        (let* ((patient (car premises))
                (go-term (cadr premises))
                (A-mbrs (get-profiled-go-mbrs go-term))
                (numt (numerator A-mbrs patient))
