@@ -21,14 +21,14 @@
 (define-public (go-pathway-intentional-similarity kbs)
    (define log-filename "intentional-reasoning-test.log")
 
-    ;; (cog-logger-set-timestamp! #f)
-    ;; (cog-logger-set-sync! #t)
+    (cog-logger-set-timestamp! #f)
+    (cog-logger-set-sync! #t)
     (cog-logger-set-level! "info")
     (cog-logger-set-filename! log-filename)
-    ;; (ure-logger-set-timestamp! #f)
-    ;; (ure-logger-set-sync! #t)
-    ; (ure-logger-set-level! "debug")
-    ; (ure-logger-set-filename! log-filename)
+    (ure-logger-set-timestamp! #f)
+    (ure-logger-set-sync! #t)
+    (ure-logger-set-level! "debug")
+    (ure-logger-set-filename! log-filename)
 
     (let* ((ss 0.001) (rs 0) (mi 100) (cp 1)
            (param-str (string-append

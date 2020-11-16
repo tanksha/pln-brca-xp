@@ -81,8 +81,9 @@
 
 
 (define (generate-subset)
-    (pln-load-from-path "opencog/pln/rules/extensional/subset-direct-introduction.scm")
+    (pln-load 'empty)
     (pln-add-rule 'subset-direct-introduction)
+    (pln-add-rule 'subset-condition-negation)
     (define target (Subset X Y))
     (filter all-nodes-non-null-mean? (cog-outgoing-set (pln-bc target #:vardecl vardecl
                                             #:maximum-iterations mi
@@ -92,7 +93,7 @@
 (define (subset->attraction)
    ;; Run backward chainer to produce attraction links. 
     ;; Add required PLN rules
-    (pln-add-rule 'subset-condition-negation)
+    (pln-load 'empty)
     (pln-add-rule 'subset-attraction-introduction)
     (define target (Attraction X Y))
     (filter all-nodes-non-null-mean? (cog-outgoing-set (pln-bc target #:vardecl vardecl
