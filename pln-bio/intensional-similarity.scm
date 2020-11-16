@@ -47,6 +47,7 @@
         ;; Load PLN
         (cog-logger-info "Running BC: Attraction->IntensionalSimilarity")
         (pln-load 'empty)
+        (pln-load "opencog/pln/rules/intensional/intensional-similarity-direct-introduction.scm")
         (pln-add-rule 'intensional-similarity-direct-introduction)
 
         (write-atoms-to-file output-file (cog-outgoing-set (pln-bc target 
