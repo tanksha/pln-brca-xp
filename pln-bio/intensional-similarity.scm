@@ -19,7 +19,7 @@
                   (TypedVariable Y ConceptT)))
 
 (define-public (go-pathway-intentional-similarity kbs)
-   (define log-filename "intentional-reasoning-test.log")
+   (define log-filename "logs/intentional-reasoning-test.log")
 
     (cog-logger-set-timestamp! #f)
     (cog-logger-set-sync! #t)

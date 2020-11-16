@@ -232,5 +232,5 @@ build/**
 kbs/
 results/
 *.log
-
+logs/
 expr-fc.scm
