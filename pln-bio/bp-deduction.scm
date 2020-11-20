@@ -4,13 +4,15 @@
     #:use-module (opencog bioscience)
     #:use-module (opencog ure)
     #:use-module (opencog pln)
-    #:use-module (srfi srfi-1))
+    #:use-module (srfi srfi-1)
+    #:use-module (pln-bio combo-preprocess))
 
 
 (define pred-var (Variable "$pred"))
 (define patient-var (Variable "$patient"))
 (define gene-var (Variable "$gene"))
 (define bp-var (Variable "$bp"))
+(define num-rank 50)
 
 (define CT (Type "ConceptNode"))
 (define GT (Type "GeneNode"))
@@ -27,14 +29,15 @@
                 patient-var
                 bp-var)
             (SatisfactionLink 
-                (TypedVariable (Variable "$gene") (Type "Gene"))
+                (TypedVariable (Variable "$gene") (Type "GeneNode"))
                 (Present 
                     (EvaluationLink
                         (LazyExecutionOutputLink
                             (SchemaNode "make-overexpression-predicate-for-gene")
                             (VariableNode "$gene"))
                             patient-var)               
-                    (Member (Variable "$gene") bp-var))))
+                    (Member (Variable "$gene") bp-var)
+                    (Member (Variable "$gene") (Concept "top-ranked")))))
             
         (ExecutionOutputLink
             (GroundedSchemaNode "scm: generate-subset-tv-overexpr")
@@ -63,14 +66,15 @@
                 patient-var
                 bp-var)
             (SatisfactionLink 
-                (TypedVariable (Variable "$gene") (Type "Gene"))
+                (TypedVariable (Variable "$gene") (Type "GeneNode"))
                 (Present 
                     (EvaluationLink
                         (LazyExecutionOutputLink
                             (SchemaNode "make-underexpression-predicate-for-gene")
                             (VariableNode "$gene"))
                             patient-var)               
-                    (Member (Variable "$gene") bp-var))))
+                    (Member (Variable "$gene") bp-var)
+                    (Member (Variable "$gene") (Concept "top-ranked")))))
             
         (ExecutionOutputLink
             (GroundedSchemaNode "scm: generate-subset-tv-underexpr")
@@ -88,6 +92,10 @@
                                 patient-var))))                
                 patient-var
                 bp-var)))))
+
+(define-public (create-lns-for-top-genes)
+    (for-each (lambda (gene)
+        (Member gene (Concept "top-ranked")))(get-top-genes num-rank)))
 
 (define-public (generate-subset-tv-overexpr conclusion . premises)
     (if (= (length premises) 2)

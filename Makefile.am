@@ -8,6 +8,7 @@ SOURCES = \
 	pln-bio/rule-utils.scm \
     pln-bio/preprocess.scm \
 	pln-bio/expr.scm \
+	pln-bio/combo-preprocess.scm \
 	pln-bio/bp-deduction.scm \
     pln-bio/intensional-similarity.scm
 
