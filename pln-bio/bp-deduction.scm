@@ -219,7 +219,7 @@
                 (Member (Variable "$g") go)
                 (Member (Variable "$g") (ConceptNode "profiled-genes")))))))
 
-(define (run-expr-deduction overexpr?)
+(define-public (run-expr-deduction overexpr?)
     (ure-logger-set-timestamp! #f)
     (ure-logger-set-sync! #t)
     (ure-logger-set-level! "debug")
