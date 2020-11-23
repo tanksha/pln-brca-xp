@@ -42,17 +42,17 @@
         (ExecutionOutputLink
             (GroundedSchemaNode "scm: generate-subset-tv-overexpr")
             (ListLink
-                (Context
-                    (Concept "profiled-genes")
-                    (Subset              
+                (Subset
+                    (AndLink
                         bp-var
-                        (SatisfyingSetScope
-                            (Variable "$G")
-                            (EvaluationLink
-                            (LazyExecutionOutputLink
-                                (SchemaNode "make-overexpression-predicate-for-gene")
-                                (VariableNode "$G"))
-                                patient-var))))                
+                        (Concept "profiled-genes"))              
+                    (SatisfyingSetScope
+                        (Variable "$G")
+                        (EvaluationLink
+                        (LazyExecutionOutputLink
+                            (SchemaNode "make-overexpression-predicate-for-gene")
+                            (VariableNode "$G"))
+                            patient-var)))               
                 patient-var
                 bp-var)))))
 
@@ -79,23 +79,23 @@
         (ExecutionOutputLink
             (GroundedSchemaNode "scm: generate-subset-tv-underexpr")
             (ListLink
-                (Context
-                    (Concept "profiled-genes")
-                    (Subset              
+                (Subset              
+                    (AndLink 
                         bp-var
-                        (SatisfyingSetScope
-                            (Variable "$G")
-                            (EvaluationLink
-                            (LazyExecutionOutputLink
-                                (SchemaNode "make-underexpression-predicate-for-gene")
-                                (VariableNode "$G"))
-                                patient-var))))                
+                        (Concept "profiled-genes"))
+                    (SatisfyingSetScope
+                        (Variable "$G")
+                        (EvaluationLink
+                        (LazyExecutionOutputLink
+                            (SchemaNode "make-underexpression-predicate-for-gene")
+                            (VariableNode "$G"))
+                            patient-var)))               
                 patient-var
                 bp-var)))))
 
 (define-public (create-lns-for-top-genes)
     (for-each (lambda (gene)
-        (Member gene (Concept "top-ranked")))(get-top-genes num-rank)))
+        (Member gene (Concept "top-ranked"))) (get-top-genes num-rank)))
 
 (define-public (generate-subset-tv-overexpr conclusion . premises)
     (if (= (length premises) 2)
