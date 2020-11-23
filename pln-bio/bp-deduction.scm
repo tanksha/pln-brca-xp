@@ -250,6 +250,12 @@
             ;;get the evaluation links for overexpr
             (cog-logger-info "Generating EvaluationLinks")
             (write-atoms-to-file "results/overexpr-evals.scm" (cog-outgoing-set (get-overexpr-eval-ln)))
+            
+            ;;Load moses models to get top ranked genes
+            (cog-logger-info "Load moses models")
+            (load-kbs (list "kbs/combo.scm"))
+            (create-lns-for-top-genes)
+
             (cog-logger-info "Generating SubsetLinks")
             ;;apply fc to get the relationship between go's and patients
             (write-atoms-to-file "results/subset-bp-patient-overexpr_50genes.scm" (cog-outgoing-set (generate-patient-bp-link-rule-overexpr)))
@@ -266,6 +272,12 @@
             ;;get the evaluation links for overexpr
             (cog-logger-info "Generating EvaluationLinks")
             (write-atoms-to-file "results/underexpr-evals.scm" (cog-outgoing-set (get-underexpr-eval-ln)))
+
+            ;;Load moses models to get top ranked genes
+            (cog-logger-info "Load moses models")
+            (load-kbs (list "kbs/combo.scm"))
+            (create-lns-for-top-genes)
+
             (cog-logger-info "Generating SubsetLinks")
             ;;apply fc to get the relationship between go's and patients
             (pln-clear)
