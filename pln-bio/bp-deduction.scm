@@ -220,11 +220,14 @@
                 (Member (Variable "$g") (ConceptNode "profiled-genes")))))))
 
 (define-public (run-expr-deduction overexpr?)
+    ;; default opencog logger
+    (cog-logger-set-stdout! #t)
+    (cog-logger-set-filename! "logs/expr.log")
+    ;;ure logger
     (ure-logger-set-timestamp! #f)
-    (ure-logger-set-sync! #t)
     (ure-logger-set-level! "debug")
     (ure-logger-set-filename! "logs/ure.log")
-    (cog-logger-set-stdout! #t)
+    
     (define filter-in (lambda (x)
         (or (go_bp? x)  (inheritance-GO_bp? x)
             (gene-memberln? x))))
