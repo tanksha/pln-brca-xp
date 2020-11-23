@@ -46,7 +46,7 @@
         (preprocess kbs #:filter-in filter-in)
         ;; Load PLN
         (cog-logger-info "Running BC: Attraction->IntensionalSimilarity")
-        (pln-load 'empty)
+        (pln-clear)
         (pln-load-from-path "opencog/pln/rules/intensional/intensional-similarity-direct-introduction.scm")
         (pln-add-rule 'intensional-similarity-direct-introduction)
 

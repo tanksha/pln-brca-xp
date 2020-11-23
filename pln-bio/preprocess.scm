@@ -11,21 +11,21 @@
 )
 
 ;; Parameters
-(define rs 0) ; Random seed
-(define ss 1) ; Subsampled portion of the KBs
-(define mi 12); Maximum number of iterations
-(define cp 10); Complexity penalty
-(define fra #t); Whether rules are fully applied
+(define-public rs 0) ; Random seed
+(define-public ss 1) ; Subsampled portion of the KBs
+(define-public mi 12); Maximum number of iterations
+(define-public cp 10); Complexity penalty
+(define-public fra #t); Whether rules are fully applied
 
 ;; Defining this in a let scope causes segmentation fault
-(define ConceptT (TypeInh "ConceptNode"))
-(define GeneT (Type "GeneNode"))
-(define X (Variable "$X"))
-(define Y (Variable "$Y"))
-(define vardecl (VariableSet
+(define-public ConceptT (TypeInh "ConceptNode"))
+(define-public GeneT (Type "GeneNode"))
+(define-public X (Variable "$X"))
+(define-public Y (Variable "$Y"))
+(define-public vardecl (VariableSet
                   (TypedVariable X ConceptT)
                   (TypedVariable Y ConceptT)))
-(define source (Inheritance X Y))
+(define-public source (Inheritance X Y))
 ;; Parameters string
 (define param-str (string-append
                    "-rs=" (number->string rs)
@@ -51,13 +51,14 @@
 
         ;; Load PLN
         (cog-logger-info "Loading PLN rules")
-        (pln-load 'empty)
+        (pln-clear)
         (pln-load-from-file (get-full-path "rules/translation.scm"))
         (pln-load-from-file (get-full-path "rules/transitivity.scm"))
         (pln-add-rule 'present-inheritance-to-subset-translation)
         (pln-add-rule 'present-subset-transitivity)
         (pln-add-rule 'present-mixed-member-subset-transitivity)
         (cog-logger-info "PLN Rules loaded.")
+        (cog-logger-info "Running FC: inheritance->subset")
         (get-results-with-tvs (pln-fc source
             #:vardecl vardecl
             #:maximum-iterations mi
@@ -81,7 +82,7 @@
 
 
 (define (generate-subset)
-    (pln-load 'empty)
+    (pln-clear)
     (pln-load-from-path "opencog/pln/rules/extensional/subset-direct-introduction.scm")
     (pln-load-from-path "opencog/pln/rules/term/condition-negation.scm")
     (pln-add-rule 'subset-direct-introduction)
@@ -95,7 +96,7 @@
 (define (subset->attraction)
    ;; Run backward chainer to produce attraction links. 
     ;; Add required PLN rules
-    (pln-load 'empty)
+    (pln-clear)
     (pln-load-from-path "opencog/pln/rules/intensional/attraction-introduction.scm")
     (pln-add-rule 'subset-attraction-introduction)
     (define target (Attraction X Y))
@@ -113,7 +114,6 @@
         (load-kbs kbs #:subsmp ss #:filter-in filter-in)
         (load-kbs kbs #:subsmp ss))
 
-    (cog-logger-info "Running FC: inheritance->subset")
     (write-atoms-to-file scm-filename (inheritance->subset))
     (cog-logger-info "Calculating GO Categories tvs")
     (write-atoms-to-file scm-filename (calculate-go/pathway-tvs (get-go-categories)))
