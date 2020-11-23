@@ -71,7 +71,7 @@
                 patient))))
 
 (define-public (overexpression-dist)
-    (filter (lambda (gene) 
+    (map (lambda (gene) 
         (create-schema-dist gene (get-overexpress-dist gene) #t)) (cog-get-atoms 'GeneNode)))
 
 (define-public (underexpression-dist)
