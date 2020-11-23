@@ -1,11 +1,15 @@
 (define-module (pln-bio bp-deduction)
     #:use-module (opencog)
+    #:use-module (opencog logger)
     #:use-module (opencog exec)
     #:use-module (opencog bioscience)
     #:use-module (opencog ure)
     #:use-module (opencog pln)
     #:use-module (srfi srfi-1)
-    #:use-module (pln-bio combo-preprocess))
+    #:use-module (pln-bio bio-utils)
+    #:use-module (pln-bio expr)
+    #:use-module (pln-bio combo-preprocess)
+    #:use-module (pln-bio preprocess))
 
 
 (define pred-var (Variable "$pred"))
@@ -19,7 +23,8 @@
 (define PT (Type "PredicateNode"))
 (define BT (Type "BiologicalProcessNode"))
 
-(define-public (generate-patient-bp-link-rule-overexpr)
+
+(define (generate-patient-bp-link-rule-overexpr)
     (cog-execute! (Bind 
         (VariableList 
             (TypedVariable patient-var CT)
@@ -56,7 +61,7 @@
                 patient-var
                 bp-var)))))
 
-(define-public (generate-patient-bp-link-rule-underexpr)
+(define (generate-patient-bp-link-rule-underexpr)
     (cog-execute! (Bind 
         (VariableList 
             (TypedVariable patient-var CT)
@@ -93,9 +98,33 @@
                 patient-var
                 bp-var)))))
 
-(define-public (create-lns-for-top-genes)
+(define (create-lns-for-top-genes)
     (for-each (lambda (gene)
         (Member gene (Concept "top-ranked"))) (get-top-genes num-rank)))
+
+(define (inheritance->member)
+    ;; Run FC to
+    ;; 1. Translate Inheritance to MemberLink
+    ;; 2. Infer closure of GO annotation
+
+    (define (get-results-with-tvs result-lst) 
+        (let ((all-mbrs (append (cog-outgoing-set result-lst)
+                    (get-member-links 'GeneNode 'BiologicalProcessNode))))
+            
+            (filter all-nodes-non-null-mean? (map (lambda (x) (cog-set-tv! x (stv 1 1))) all-mbrs))))
+
+        ;; Load PLN
+        (pln-clear)
+        (pln-load-from-file (get-full-path "rules/translation.scm"))
+        (pln-load-from-file (get-full-path "rules/transitivity.scm"))
+        (pln-add-rule 'present-inheritance-transitivity)
+        (pln-add-rule 'present-inheritance-to-member-translation)
+        (cog-logger-info "Running FC: inheritance->member")
+        (write-atoms-to-file "go-inhr-member.scm" (get-results-with-tvs (pln-fc source
+            #:vardecl vardecl
+            #:maximum-iterations mi
+            #:complexity-penalty cp
+            #:fc-full-rule-application fra))))
 
 (define-public (generate-subset-tv-overexpr conclusion . premises)
     (if (= (length premises) 2)
@@ -189,3 +218,53 @@
             (Present 
                 (Member (Variable "$g") go)
                 (Member (Variable "$g") (ConceptNode "profiled-genes")))))))
+
+(define (run-expr-deduction overexpr?)
+    (ure-logger-set-timestamp! #f)
+    (ure-logger-set-sync! #t)
+    (ure-logger-set-level! "debug")
+    (ure-logger-set-filename! "logs/ure.log")
+    (cog-logger-set-stdout! #t)
+    (define filter-in (lambda (x)
+        (or (go_bp? x)  (inheritance-GO_bp? x)
+            (gene-memberln? x))))
+
+    ;;load go biological process
+    (cog-logger-info "Loading GO terms")
+    (load-kbs (list "kbs/GO.scm" "kbs/GO_annotation.scm")
+            #:filter-in filter-in)
+    ;; Comment out after the first run and just load the output file
+    (inheritance->member)
+    (if overexpr?
+        (begin 
+            (cog-logger-info "Loading patient overexpression data")
+            ;;load the atomese form of overexpr & underexpr
+            (load-kbs (list "kbs/patient_gene_over_expr_50genes.scm"))
+
+            ;;generate the quantiles for overexpr
+            (cog-logger-info "Generating SchemaValueLists")
+            (write-atoms-to-file "results/overexpr-dist.scm" (overexpression-dist))
+            ;;get the evaluation links for overexpr
+            (cog-logger-info "Generating EvaluationLinks")
+            (write-atoms-to-file "results/overexpr-evals.scm" (cog-outgoing-set (get-overexpr-eval-ln)))
+            (cog-logger-info "Generating SubsetLinks")
+            ;;apply fc to get the relationship between go's and patients
+            (write-atoms-to-file "results/subset-bp-patient-overexpr_50genes.scm" (cog-outgoing-set (generate-patient-bp-link-rule-overexpr)))
+            (cog-logger-info "Done!")
+        )
+        (begin 
+            (cog-logger-info "Loading patient underexpression data")
+            ;;load the atomese form of overexpr & underexpr
+            (load-kbs (list "kbs/patient_gene_under_expr_50genes.scm"))
+
+            ;;generate the quantiles for overexpr
+            (cog-logger-info "Generating SchemaValueLists")
+            (write-atoms-to-file "results/underexpr-dist.scm" (underexpression-dist))
+            ;;get the evaluation links for overexpr
+            (cog-logger-info "Generating EvaluationLinks")
+            (write-atoms-to-file "results/underexpr-evals.scm" (cog-outgoing-set (get-underexpr-eval-ln)))
+            (cog-logger-info "Generating SubsetLinks")
+            ;;apply fc to get the relationship between go's and patients
+            (pln-clear)
+            (write-atoms-to-file "results/subset-bp-patient-underexpr_50genes.scm" (cog-outgoing-set (generate-patient-bp-link-rule-underexpr)))
+            (cog-logger-info "Done!"))))
