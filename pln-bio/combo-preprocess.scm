@@ -8,11 +8,11 @@
     (let* ((gene-preds (filter (lambda (p) 
                 (and (not (string=? "outcome" (cog-name p))) (not (string-prefix? "brca:" (cog-name p))))) (cog-get-atoms 'PredicateNode)))
                 
-           (sorted-scores (sort (map get-gene-score gene-preds)  compare?))
-           (top-genes (map (lambda (p) (GeneNode (cog-name p))) sorted-scores)))
+           (sorted-scores (sort (map (lambda (pred) (cons (GeneNode (cog-name pred)) (get-gene-score pred))) gene-preds)  compare?))
+           (top-genes (map (lambda (p) (car p)) sorted-scores)))
            
         (take top-genes n)))
-
+ 
 (define (get-containers gene-pred)
         (cog-value->list (cog-execute! (MaximalJoin
             (TypedVariable (Variable "$x") (Signature gene-pred))
