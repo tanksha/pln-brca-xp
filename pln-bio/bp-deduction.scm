@@ -118,7 +118,7 @@
         (pln-load-from-file (get-full-path "rules/translation.scm"))
         (pln-load-from-file (get-full-path "rules/transitivity.scm"))
         (pln-add-rule 'present-inheritance-transitivity)
-        (pln-add-rule 'present-inheritance-to-member-translation)
+        (pln-add-rule 'present-mixed-member-inheritance-transitivity)
         (cog-logger-info "Running FC: inheritance->member")
         (write-atoms-to-file "go-inhr-member.scm" (get-results-with-tvs (pln-fc source
             #:vardecl vardecl
@@ -227,7 +227,7 @@
     (ure-logger-set-timestamp! #f)
     (ure-logger-set-level! "debug")
     (ure-logger-set-filename! "logs/ure.log")
-    
+
     (define filter-in (lambda (x)
         (or (go_bp? x)  (inheritance-GO_bp? x)
             (gene-memberln? x))))

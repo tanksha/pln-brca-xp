@@ -41,3 +41,14 @@
   (DefinedSchemaNode "present-mixed-member-subset-transitivity-rule"))
 (DefineLink present-mixed-member-subset-transitivity-rule-name
   present-mixed-member-subset-transitivity-rule)
+
+
+;; Mixed (Member A B), (Inheritance B C) |- (Member A C)
+(define present-mixed-member-inheritance-transitivity-rule
+  (gen-present-mixed-link-transitivity-rule MemberLink
+                                            InheritanceLink
+                                            GeneT ConceptT ConceptT))
+(define present-mixed-member-inheritance-transitivity-rule-name
+  (DefinedSchemaNode "present-mixed-member-inheritance-transitivity-rule"))
+(DefineLink present-mixed-member-inheritance-transitivity-rule-name
+  present-mixed-member-inheritance-transitivity-rule)

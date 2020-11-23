@@ -13,12 +13,4 @@
   (DefinedSchemaNode "present-inheritance-to-subset-translation-rule"))
 (DefineLink present-inheritance-to-subset-translation-rule-name
   present-inheritance-to-subset-translation-rule)
-
-
-;; Inheritance to Member
-(define present-inheritance-to-member-translation-rule
-  (gen-present-link-translation-rule InheritanceLink MemberLink ConceptT))
-(define present-inheritance-to-member-translation-rule-name
-  (DefinedSchemaNode "present-inheritance-to-member-translation-rule"))
-(DefineLink present-inheritance-to-member-translation-rule-name
-  present-inheritance-to-member-translation-rule)
+  
