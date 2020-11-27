@@ -14,9 +14,11 @@
         (take top-genes n)))
  
 (define (get-containers gene-pred)
-        (cog-value->list (cog-execute! (MaximalJoin
-            (TypedVariable (Variable "$x") (Signature gene-pred))
-            (ReplacementLink (Variable "$x") gene-pred)))))
+    ;;Get the models that where gene-pred occurs in
+        (cog-value->list (cog-execute! 
+            (MaximalJoin
+                (TypedVariable (Variable "$x") (Signature gene-pred))
+                (ReplacementLink (Variable "$x") gene-pred)))))
 
 (define (get-f1-score ln)
         (let* ((model (gar ln))

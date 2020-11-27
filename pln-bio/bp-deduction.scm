@@ -5,29 +5,63 @@
     #:use-module (opencog bioscience)
     #:use-module (opencog ure)
     #:use-module (opencog pln)
+    #:use-module (fibers)
+    #:use-module (fibers channels)
+    #:use-module (fibers conditions)
+    #:use-module (ice-9 suspendable-ports)
+    #:use-module (ice-9 textual-ports)
     #:use-module (srfi srfi-1)
     #:use-module (pln-bio bio-utils)
     #:use-module (pln-bio expr)
     #:use-module (pln-bio combo-preprocess)
     #:use-module (pln-bio preprocess))
 
+(install-suspendable-ports!)
 
 (define pred-var (Variable "$pred"))
 (define patient-var (Variable "$patient"))
 (define gene-var (Variable "$gene"))
 (define bp-var (Variable "$bp"))
 (define num-rank 50)
+(define batch-size 250)
 
 (define CT (Type "ConceptNode"))
 (define GT (Type "GeneNode"))
 (define PT (Type "PredicateNode"))
 (define BT (Type "BiologicalProcessNode"))
 
+(define-public (run-deduction-expr overexpr?)
+  (run-fibers (lambda () 
+    (setup-expr overexpr?)
+    ;; get patient atoms and run the deduction in batch
+    (cog-logger-info "Generating SubsetLinks")
+    ;;apply fc to get the relationship between go's and patients
+    (let* ((patients (cog-get-atoms 'PatientNode))
+          (q (euclidean-quotient (length patients) batch-size))
+          (r ( euclidean-remainder (length patients) batch-size))
+          (batches (if (= r 0) (split-lst patients q) (cons (split-lst (take patients (* num-batches q)) q) (take-right patients r))))
+          (writer-cond (make-condition))
+          (writer-chan (make-channel))
+          (writer-port (if overexpr? (open-file "results/subset-bp-patient-overexpr_50genes.scm" "w") (open-file "results/subset-bp-patient-underexpr_50genes.scm" "w"))))
+        
+        (spawn-fiber (lambda () (output-to-file (lambda () (get-message writer-chan)) writer-port writer-cond)))
+        (if overexpr?
+            (for-each (lambda (batch)
+                (spawn-fiber (lambda () (for-each (lambda (patient) (send-message (generate-patient-bp-link-rule-overexpr patient) writer-chan))  batch))))  batches)
+            (for-each (lambda (batch)
+                (spawn-fiber (lambda () (for-each (lambda (patient) (send-message (generate-patient-bp-link-rule-overexpr patient) writer-chan))  batch))))  batches))
 
-(define (generate-patient-bp-link-rule-overexpr)
-    (cog-execute! (Bind 
-        (VariableList 
-            (TypedVariable patient-var CT)
+        (send-message 'eof writer-chan)      
+        (wait writer-cond)
+        (cog-logger-info "Done!"))) #:drain? #t))
+
+(define (split-lst lst n)
+    (if (null? lst) '()
+        (cons (take lst n) (split-lst (drop lst n) n))))
+
+(define (generate-patient-bp-link-rule-overexpr patinet-var)
+    (cog-outgoing-set (cog-execute! (Bind 
+        (VariableList
             (TypedVariable bp-var BT))
         (AndLink 
             (Present 
@@ -59,12 +93,11 @@
                             (VariableNode "$G"))
                             patient-var)))               
                 patient-var
-                bp-var)))))
+                bp-var))))))
 
-(define (generate-patient-bp-link-rule-underexpr)
-    (cog-execute! (Bind 
+(define (generate-patient-bp-link-rule-underexpr patient-var)
+    (cog-outgoing-set (cog-execute! (Bind 
         (VariableList 
-            (TypedVariable patient-var CT)
             (TypedVariable bp-var BT))
         (AndLink 
             (Present 
@@ -96,7 +129,7 @@
                             (VariableNode "$G"))
                             patient-var)))               
                 patient-var
-                bp-var)))))
+                bp-var))))))
 
 (define (create-lns-for-top-genes)
     (for-each (lambda (gene)
@@ -219,7 +252,7 @@
                 (Member (Variable "$g") go)
                 (Member (Variable "$g") (ConceptNode "profiled-genes")))))))
 
-(define-public (run-expr-deduction overexpr?)
+(define-public (setup-expr overexpr?)
     ;; default opencog logger
     (cog-logger-set-stdout! #t)
     (cog-logger-set-filename! "logs/expr.log")
@@ -254,13 +287,7 @@
             ;;Load moses models to get top ranked genes
             (cog-logger-info "Load moses models")
             (load-kbs (list "kbs/combo.scm"))
-            (create-lns-for-top-genes)
-
-            (cog-logger-info "Generating SubsetLinks")
-            ;;apply fc to get the relationship between go's and patients
-            (write-atoms-to-file "results/subset-bp-patient-overexpr_50genes.scm" (cog-outgoing-set (generate-patient-bp-link-rule-overexpr)))
-            (cog-logger-info "Done!")
-        )
+            (create-lns-for-top-genes))
         (begin 
             (cog-logger-info "Loading patient underexpression data")
             ;;load the atomese form of overexpr & underexpr
@@ -276,10 +303,20 @@
             ;;Load moses models to get top ranked genes
             (cog-logger-info "Load moses models")
             (load-kbs (list "kbs/combo.scm"))
-            (create-lns-for-top-genes)
+            (create-lns-for-top-genes))))
 
-            (cog-logger-info "Generating SubsetLinks")
-            ;;apply fc to get the relationship between go's and patients
-            (pln-clear)
-            (write-atoms-to-file "results/subset-bp-patient-underexpr_50genes.scm" (cog-outgoing-set (generate-patient-bp-link-rule-underexpr)))
-            (cog-logger-info "Done!"))))
+(define-public (send-message message chan)
+  (if (or (list? message) (pair? message))
+    (for-each (lambda (msg) (put-message chan msg))  message)
+    (put-message chan message)))
+
+(define-public (output-to-file proc port cond)
+    (let loop (
+      (msg (proc)))
+    (if (equal? msg 'eof)
+      (begin (force-output port)
+          (close-port port)
+          (signal-condition! cond))
+      (begin 
+         (write msg port)
+         (loop (proc))))))
