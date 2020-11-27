@@ -15,6 +15,11 @@ GUILE_FLAGS
 
 ##Check Guile modules
 
+GUILE_MODULE_AVAILABLE(HAVE_FIBERS, [(fibers) (fibers channels)])
+if test "x$HAVE_FIBERS" = "xno"; then
+    AC_MSG_ERROR([The atomspace is required. See https://github.com/wingo/fibers for details])
+fi
+
 GUILE_MODULE_AVAILABLE(HAVE_OPENCOG, [(opencog) (opencog exec)])
 if test "x$HAVE_OPENCOG" = "xno"; then
     AC_MSG_ERROR([The atomspace is required. See https://github.com/singnet/atomspace for details])
