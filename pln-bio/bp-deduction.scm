@@ -39,7 +39,7 @@
     (let* ((patients (cog-get-atoms 'PatientNode))
           (q (euclidean-quotient (length patients) batch-size))
           (r ( euclidean-remainder (length patients) batch-size))
-          (batches (if (= r 0) (split-lst patients q) (cons (split-lst (take patients (* num-batches q)) q) (take-right patients r))))
+          (batches (if (= r 0) (split-lst patients q) (cons (split-lst (take patients (* batch-size q)) q) (take-right patients r))))
           (writer-cond (make-condition))
           (writer-chan (make-channel))
           (writer-port (if overexpr? (open-file "results/subset-bp-patient-overexpr_50genes.scm" "w") (open-file "results/subset-bp-patient-underexpr_50genes.scm" "w"))))
