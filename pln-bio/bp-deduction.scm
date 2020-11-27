@@ -282,7 +282,7 @@
             (write-atoms-to-file "results/overexpr-dist.scm" (overexpression-dist))
             ;;get the evaluation links for overexpr
             (cog-logger-info "Generating EvaluationLinks")
-            (write-atoms-to-file "results/overexpr-evals.scm" (cog-outgoing-set (get-overexpr-eval-ln)))
+            (write-atoms-to-file "results/overexpr-evals.scm" (get-overexpr-eval-ln))
             
             ;;Load moses models to get top ranked genes
             (cog-logger-info "Load moses models")
@@ -298,7 +298,7 @@
             (write-atoms-to-file "results/underexpr-dist.scm" (underexpression-dist))
             ;;get the evaluation links for overexpr
             (cog-logger-info "Generating EvaluationLinks")
-            (write-atoms-to-file "results/underexpr-evals.scm" (cog-outgoing-set (get-underexpr-eval-ln)))
+            (write-atoms-to-file "results/underexpr-evals.scm" (get-underexpr-eval-ln))
 
             ;;Load moses models to get top ranked genes
             (cog-logger-info "Load moses models")

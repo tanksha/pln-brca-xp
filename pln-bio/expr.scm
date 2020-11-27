@@ -11,7 +11,7 @@
 (define-public conf (exact->inexact (/ num-samples (+ num-samples personality-parm))))
 
 (define-public (get-overexpr-eval-ln)
-    (cog-execute! (Bind
+    (cog-outgoing-set (cog-execute! (Bind
         (VariableList
             (TypedVariable (Variable "$gene") (Type "GeneNode"))
             (TypedVariable (Variable "$patient") (Type "ConceptNode"))
@@ -29,11 +29,11 @@
                 (Variable "$gene")
                 (Variable "$patient")
                 (Variable "$num")
-                (Concept "1"))))))
+                (Concept "1")))))))
 
 
 (define-public (get-underexpr-eval-ln)
-    (cog-execute! (Bind
+    (cog-outgoing-set (cog-execute! (Bind
         (VariableList
             (TypedVariable (Variable "$gene") (Type "GeneNode"))
             (TypedVariable (Variable "$patient") (Type "ConceptNode"))
@@ -51,7 +51,7 @@
                 (Variable "$gene")
                 (Variable "$patient")
                 (Variable "$num")
-                (ConceptNode "0"))))))
+                (ConceptNode "0")))))))
 
 (define-public (calculate-expression-tv gene patient value overexpr-tv?)
     (let* ((overexpr? (= (num-node->num overexpr-tv?) 1))
@@ -71,11 +71,11 @@
                 patient))))
 
 (define-public (overexpression-dist)
-    (map (lambda (gene) 
+    (filter (lambda (gene) 
         (create-schema-dist gene (get-overexpress-dist gene) #t)) (cog-get-atoms 'GeneNode)))
 
 (define-public (underexpression-dist)
-    (map (lambda (gene) 
+    (filter (lambda (gene) 
         (create-schema-dist gene (get-underexpress-dist gene) #f)) (cog-get-atoms 'GeneNode)))
 
 (define-public (create-schema-dist gene expr-lst overexpr?)
