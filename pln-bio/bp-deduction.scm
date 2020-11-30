@@ -61,7 +61,7 @@
         ;         (spawn-fiber (lambda () (for-each (lambda (patient) (send-message (generate-patient-bp-link-rule-underexpr patient) writer-chan))  batch)) #:parallel? #t))  batches))
         (for-each (lambda (batch)
             (spawn-fiber (lambda () (run-batch batch batch-num overexpr?)))
-            (set! batch-num (+ batch-num 1))) batches)) #:drain? #t)))
+            (set! batch-num (+ batch-num 1))) batches))) #:drain? #t))
 
 (define (run-batch batch batch-num overexpr?)
     (let* ((batch-port (open-file (string-append "results/" "subset-bp-patient-overexpr_8genes_batch"  batch-num ".scm") "a")))
