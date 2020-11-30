@@ -5,11 +5,7 @@
     #:use-module (opencog bioscience)
     #:use-module (opencog ure)
     #:use-module (opencog pln)
-    #:use-module (fibers)
-    #:use-module (fibers channels)
-    #:use-module ((ice-9 threads)
-            #:select (make-mutex
-                        lock-mutex unlock-mutex))
+    #:use-module (ice-9 threads)
     #:use-module (fibers conditions)
     #:use-module (ice-9 suspendable-ports)
     #:use-module (ice-9 textual-ports)
@@ -34,42 +30,28 @@
 (define BT (Type "BiologicalProcessNode"))
 
 (define-public (run-deduction-expr overexpr?)
-  (setup-expr overexpr?)
-  (run-fibers (lambda () 
+    (setup-expr overexpr?)
     ;; get patient atoms and run the deduction in batch
     (cog-logger-info "Generating SubsetLinks")
     ;;apply fc to get the relationship between go's and patients
     (let* ((patients (cog-get-atoms 'PatientNode))
-          (batch-num 0)
-          (mutex (make-mutex))
-          (q (euclidean-quotient (length patients) batch-size))
-          (r (euclidean-remainder (length patients) batch-size))
-          (batches (if (= r 0) (split-lst patients q) (append (split-lst (take patients (* batch-size q)) q) (cons (take-right patients r) '())))))
+            (batch-num 0)
+            (mutex (make-mutex))
+            (q (euclidean-quotient (length patients) batch-size))
+            (r (euclidean-remainder (length patients) batch-size))
+            (batches (if (= r 0) (split-lst patients q) (append (split-lst (take patients (* batch-size q)) q) (cons (take-right patients r) '()))))
+            (port (if overexpr? (open-file "results/subset-bp-patient-overexpr_8.scm" "a") (open-file "results/subset-bp-patient-underexpr_8.scm" "a"))))
+        (par-for-each (lambda (batch)
+            (run-batch batch port overexpr?)) batches)
         
-        ; (spawn-fiber (lambda () (output-to-file (lambda () (get-message writer-chan)) writer-port writer-cond)))
-        ; (if overexpr?
-        ;     (for-each (lambda (batch)
-        ;         (spawn-fiber (lambda () (for-each 
-        ;             (lambda (patient) 
-        ;                 (send-message (generate-patient-bp-link-rule-overexpr patient) writer-chan)
-        ;                 ;;update the number of processed patients
-        ;                 (lock-mutex mutex)
-        ;                 (set! num-patients (+ num-patients 1))
-        ;                 (unlock-mutex mutex)
-        ;                 (send-message num-patients monitor-chan))  batch)) #:parallel? #t))  batches)
-        ;     (for-each (lambda (batch)
-        ;         (spawn-fiber (lambda () (for-each (lambda (patient) (send-message (generate-patient-bp-link-rule-underexpr patient) writer-chan))  batch)) #:parallel? #t))  batches))
-        (for-each (lambda (batch)
-            (spawn-fiber (lambda () (run-batch batch batch-num overexpr?)))
-            (set! batch-num (+ batch-num 1))) batches))) #:drain? #t))
+        (close-port port)
+        (cog-logger-info "Done!")))
 
-(define (run-batch batch batch-num overexpr?)
-    (let* ((batch-port (open-file (string-append "results/" "subset-bp-patient-overexpr_8genes_batch"  batch-num ".scm") "a")))
-        (for-each (lambda (patient)
-            (if overexpr?
-                (write-result-to-file batch-port (generate-patient-bp-link-rule-overexpr patient))
-                (write-result-to-file batch-port (generate-patient-bp-link-rule-underexpr patient)))) batch)
-        (close-port batch-port)))
+(define (run-batch batch port overexpr?)
+    (for-each (lambda (patient)
+        (if overexpr?
+            (write-result-to-file port (generate-patient-bp-link-rule-overexpr patient))
+            (write-result-to-file port (generate-patient-bp-link-rule-underexpr patient)))) batch))
 
 (define (monitor mon-chan writer-chan cond)
     (let loop ((num (get-message mon-chan)))
