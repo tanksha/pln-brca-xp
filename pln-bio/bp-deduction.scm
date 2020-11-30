@@ -40,27 +40,20 @@
             (q (euclidean-quotient (length patients) batch-size))
             (r (euclidean-remainder (length patients) batch-size))
             (batches (if (= r 0) (split-lst patients q) (append (split-lst (take patients (* batch-size q)) q) (cons (take-right patients r) '()))))
-            (port (if overexpr? (open-file "results/subset-bp-patient-overexpr_8.scm" "a") (open-file "results/subset-bp-patient-underexpr_8.scm" "a"))))
-        (par-for-each (lambda (batch)
-            (run-batch batch port overexpr?)) batches)
+            (port (if overexpr? (open-file "results/subset-bp-patient-overexpr_8.scm" "w") (open-file "results/subset-bp-patient-underexpr_8.scm" "a"))))
+        
+        (n-for-each-par-map (current-processor-count) (lambda (res)
+            (write-result-to-file port res)) (lambda (batch)
+            (run-batch batch overexpr?)) batches)
         
         (close-port port)
         (cog-logger-info "Done!")))
 
-(define (run-batch batch port overexpr?)
-    (for-each (lambda (patient)
+(define (run-batch batch overexpr?)
+    (map (lambda (patient)
         (if overexpr?
-            (write-result-to-file port (generate-patient-bp-link-rule-overexpr patient))
-            (write-result-to-file port (generate-patient-bp-link-rule-underexpr patient)))) batch))
-
-(define (monitor mon-chan writer-chan cond)
-    (let loop ((num (get-message mon-chan)))
-        (if (= num sample-size)
-            (begin 
-              (send-message 'eof writer-chan)      
-              (wait cond)
-              (cog-logger-info "Done!"))
-            (loop (get-message mon-chan)))))
+            (generate-patient-bp-link-rule-overexpr patient)
+            (generate-patient-bp-link-rule-underexpr patient))) batch))
 
 (define (generate-patient-bp-link-rule-overexpr patinet-var)
     (cog-outgoing-set (cog-execute! (Bind 
@@ -311,19 +304,3 @@
 (define (split-lst lst n)
     (if (null? lst) '()
         (cons (take lst n) (split-lst (drop lst n) n))))
-
-(define-public (send-message message chan)
-  (if (or (list? message) (pair? message))
-    (for-each (lambda (msg) (put-message chan msg))  message)
-    (put-message chan message)))
-
-(define-public (output-to-file proc port cond)
-    (let loop (
-      (msg (proc)))
-    (if (equal? msg 'eof)
-      (begin (force-output port)
-          (close-port port)
-          (signal-condition! cond))
-      (begin 
-         (write msg port)
-         (loop (proc))))))
