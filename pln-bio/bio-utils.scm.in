@@ -308,6 +308,9 @@
 
   *unspecified*)
 
+(define-public (write-result-to-file port a-lst)
+  (for-each (lambda (x) (write x port)) a-lst))
+
 (define-public (true-subset-inverse S)
 "
   Given a subset with a true value

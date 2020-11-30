@@ -40,32 +40,36 @@
     (cog-logger-info "Generating SubsetLinks")
     ;;apply fc to get the relationship between go's and patients
     (let* ((patients (cog-get-atoms 'PatientNode))
-          (num-patients 0)
+          (batch-num 0)
           (mutex (make-mutex))
           (q (euclidean-quotient (length patients) batch-size))
           (r (euclidean-remainder (length patients) batch-size))
-          (batches (if (= r 0) (split-lst patients q) (append (split-lst (take patients (* batch-size q)) q) (cons (take-right patients r) '()))))
-          (writer-cond (make-condition))
-          (writer-chan (make-channel))
-          (monitor-chan (make-channel))
-          (writer-port (if overexpr? (open-file "results/subset-bp-patient-overexpr_8genes.scm" "w") (open-file "results/subset-bp-patient-underexpr_8genes.scm" "w"))))
+          (batches (if (= r 0) (split-lst patients q) (append (split-lst (take patients (* batch-size q)) q) (cons (take-right patients r) '())))))
         
-        (spawn-fiber (lambda () (output-to-file (lambda () (get-message writer-chan)) writer-port writer-cond)))
-        (if overexpr?
-            (for-each (lambda (batch)
-                (spawn-fiber (lambda () (for-each 
-                    (lambda (patient) 
-                        (send-message (generate-patient-bp-link-rule-overexpr patient) writer-chan)
-                        ;;update the number of processed patients
-                        (lock-mutex mutex)
-                        (set! num-patients (+ num-patients 1))
-                        (unlock-mutex mutex)
-                        (send-message num-patients monitor-chan))  batch)) #:parallel? #t))  batches)
-            (for-each (lambda (batch)
-                (spawn-fiber (lambda () (for-each (lambda (patient) (send-message (generate-patient-bp-link-rule-underexpr patient) writer-chan))  batch)) #:parallel? #t))  batches))
+        ; (spawn-fiber (lambda () (output-to-file (lambda () (get-message writer-chan)) writer-port writer-cond)))
+        ; (if overexpr?
+        ;     (for-each (lambda (batch)
+        ;         (spawn-fiber (lambda () (for-each 
+        ;             (lambda (patient) 
+        ;                 (send-message (generate-patient-bp-link-rule-overexpr patient) writer-chan)
+        ;                 ;;update the number of processed patients
+        ;                 (lock-mutex mutex)
+        ;                 (set! num-patients (+ num-patients 1))
+        ;                 (unlock-mutex mutex)
+        ;                 (send-message num-patients monitor-chan))  batch)) #:parallel? #t))  batches)
+        ;     (for-each (lambda (batch)
+        ;         (spawn-fiber (lambda () (for-each (lambda (patient) (send-message (generate-patient-bp-link-rule-underexpr patient) writer-chan))  batch)) #:parallel? #t))  batches))
+        (for-each (lambda (batch)
+            (spawn-fiber (lambda () (run-batch batch batch-num overexpr?)))
+            (set! batch-num (+ batch-num 1))) batches)) #:drain? #t)))
 
-            ;;wait for all patients to be processed
-            (monitor monitor-chan writer-chan writer-cond)) #:drain? #t)))
+(define (run-batch batch batch-num overexpr?)
+    (let* ((batch-port (open-file (string-append "results/" "subset-bp-patient-overexpr_8genes_batch"  batch-num ".scm") "a")))
+        (for-each (lambda (patient)
+            (if overexpr?
+                (write-result-to-file batch-port (generate-patient-bp-link-rule-overexpr patient))
+                (write-result-to-file batch-port (generate-patient-bp-link-rule-underexpr patient)))) batch)
+        (close-port batch-port)))
 
 (define (monitor mon-chan writer-chan cond)
     (let loop ((num (get-message mon-chan)))
