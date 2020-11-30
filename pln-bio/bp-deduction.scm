@@ -7,6 +7,9 @@
     #:use-module (opencog pln)
     #:use-module (fibers)
     #:use-module (fibers channels)
+    #:use-module ((ice-9 threads)
+            #:select (make-mutex
+                        lock-mutex unlock-mutex))
     #:use-module (fibers conditions)
     #:use-module (ice-9 suspendable-ports)
     #:use-module (ice-9 textual-ports)
@@ -24,40 +27,54 @@
 (define bp-var (Variable "$bp"))
 (define num-rank 50)
 (define batch-size 250)
-
+(define sample-size 2237)
 (define CT (Type "ConceptNode"))
 (define GT (Type "GeneNode"))
 (define PT (Type "PredicateNode"))
 (define BT (Type "BiologicalProcessNode"))
 
 (define-public (run-deduction-expr overexpr?)
+  (setup-expr overexpr?)
   (run-fibers (lambda () 
-    (setup-expr overexpr?)
     ;; get patient atoms and run the deduction in batch
     (cog-logger-info "Generating SubsetLinks")
     ;;apply fc to get the relationship between go's and patients
     (let* ((patients (cog-get-atoms 'PatientNode))
+          (num-patients 0)
+          (mutex (make-mutex))
           (q (euclidean-quotient (length patients) batch-size))
-          (r ( euclidean-remainder (length patients) batch-size))
-          (batches (if (= r 0) (split-lst patients q) (cons (split-lst (take patients (* batch-size q)) q) (take-right patients r))))
+          (r (euclidean-remainder (length patients) batch-size))
+          (batches (if (= r 0) (split-lst patients q) (append (split-lst (take patients (* batch-size q)) q) (cons (take-right patients r) '()))))
           (writer-cond (make-condition))
           (writer-chan (make-channel))
-          (writer-port (if overexpr? (open-file "results/subset-bp-patient-overexpr_50genes.scm" "w") (open-file "results/subset-bp-patient-underexpr_50genes.scm" "w"))))
+          (monitor-chan (make-channel))
+          (writer-port (if overexpr? (open-file "results/subset-bp-patient-overexpr_8genes.scm" "w") (open-file "results/subset-bp-patient-underexpr_8genes.scm" "w"))))
         
         (spawn-fiber (lambda () (output-to-file (lambda () (get-message writer-chan)) writer-port writer-cond)))
         (if overexpr?
             (for-each (lambda (batch)
-                (spawn-fiber (lambda () (for-each (lambda (patient) (send-message (generate-patient-bp-link-rule-overexpr patient) writer-chan))  batch))))  batches)
+                (spawn-fiber (lambda () (for-each 
+                    (lambda (patient) 
+                        (send-message (generate-patient-bp-link-rule-overexpr patient) writer-chan)
+                        ;;update the number of processed patients
+                        (lock-mutex mutex)
+                        (set! num-patients (+ num-patients 1))
+                        (unlock-mutex mutex)
+                        (send-message num-patients monitor-chan))  batch)) #:parallel? #t))  batches)
             (for-each (lambda (batch)
-                (spawn-fiber (lambda () (for-each (lambda (patient) (send-message (generate-patient-bp-link-rule-overexpr patient) writer-chan))  batch))))  batches))
+                (spawn-fiber (lambda () (for-each (lambda (patient) (send-message (generate-patient-bp-link-rule-underexpr patient) writer-chan))  batch)) #:parallel? #t))  batches))
 
-        (send-message 'eof writer-chan)      
-        (wait writer-cond)
-        (cog-logger-info "Done!"))) #:drain? #t))
+            ;;wait for all patients to be processed
+            (monitor monitor-chan writer-chan writer-cond)) #:drain? #t)))
 
-(define (split-lst lst n)
-    (if (null? lst) '()
-        (cons (take lst n) (split-lst (drop lst n) n))))
+(define (monitor mon-chan writer-chan cond)
+    (let loop ((num (get-message mon-chan)))
+        (if (= num sample-size)
+            (begin 
+              (send-message 'eof writer-chan)      
+              (wait cond)
+              (cog-logger-info "Done!"))
+            (loop (get-message mon-chan)))))
 
 (define (generate-patient-bp-link-rule-overexpr patinet-var)
     (cog-outgoing-set (cog-execute! (Bind 
@@ -304,6 +321,10 @@
             (cog-logger-info "Load moses models")
             (load-kbs (list "kbs/combo.scm"))
             (create-lns-for-top-genes))))
+
+(define (split-lst lst n)
+    (if (null? lst) '()
+        (cons (take lst n) (split-lst (drop lst n) n))))
 
 (define-public (send-message message chan)
   (if (or (list? message) (pair? message))
