@@ -263,22 +263,22 @@
 
     ;;load go biological process
     (cog-logger-info "Loading GO terms")
-    (load-kbs (list "kbs/GO.scm" "kbs/GO_annotation.scm")
+    (load-kbs (list "kbs/GO.scm" "kbs/GO_annotation.scm" "kbs/go-inhr-member.scm")
             #:filter-in filter-in)
     ;; Comment out after the first run and just load the output file
-    (inheritance->member)
+    ;;(inheritance->member)
     (if overexpr?
         (begin 
             (cog-logger-info "Loading patient overexpression data")
             ;;load the atomese form of overexpr & underexpr
-            (load-kbs (list "kbs/patient_gene_over_expr_50genes.scm"))
+            (load-kbs (list "kbs/patient_gene_over_expr_8genes.scm"))
 
             ;;generate the quantiles for overexpr
             (cog-logger-info "Generating SchemaValueLists")
-            (write-atoms-to-file "results/overexpr-dist.scm" (overexpression-dist))
+            (write-atoms-to-file "results/overexpr-dist_8.scm" (overexpression-dist))
             ;;get the evaluation links for overexpr
             (cog-logger-info "Generating EvaluationLinks")
-            (write-atoms-to-file "results/overexpr-evals.scm" (get-overexpr-eval-ln))
+            (write-atoms-to-file "results/overexpr-evals_8.scm" (get-overexpr-eval-ln))
             
             ;;Load moses models to get top ranked genes
             (cog-logger-info "Load moses models")
@@ -287,14 +287,14 @@
         (begin 
             (cog-logger-info "Loading patient underexpression data")
             ;;load the atomese form of overexpr & underexpr
-            (load-kbs (list "kbs/patient_gene_under_expr_50genes.scm"))
+            (load-kbs (list "kbs/patient_gene_under_expr_8genes.scm"))
 
             ;;generate the quantiles for overexpr
             (cog-logger-info "Generating SchemaValueLists")
-            (write-atoms-to-file "results/underexpr-dist.scm" (underexpression-dist))
+            (write-atoms-to-file "results/underexpr-dist_8.scm" (underexpression-dist))
             ;;get the evaluation links for overexpr
             (cog-logger-info "Generating EvaluationLinks")
-            (write-atoms-to-file "results/underexpr-evals.scm" (get-underexpr-eval-ln))
+            (write-atoms-to-file "results/underexpr-evals_8.scm" (get-underexpr-eval-ln))
 
             ;;Load moses models to get top ranked genes
             (cog-logger-info "Load moses models")

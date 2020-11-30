@@ -14,7 +14,7 @@
     (cog-outgoing-set (cog-execute! (Bind
         (VariableList
             (TypedVariable (Variable "$gene") (Type "GeneNode"))
-            (TypedVariable (Variable "$patient") (Type "ConceptNode"))
+            (TypedVariable (Variable "$patient") (Type "PatientNode"))
             (TypedVariable (Variable "$num") (Type "NumberNode")))
         (Present 
             (ExecutionLink
@@ -36,7 +36,7 @@
     (cog-outgoing-set (cog-execute! (Bind
         (VariableList
             (TypedVariable (Variable "$gene") (Type "GeneNode"))
-            (TypedVariable (Variable "$patient") (Type "ConceptNode"))
+            (TypedVariable (Variable "$patient") (Type "PatientNode"))
             (TypedVariable (Variable "$num") (Type "NumberNode")))
         (Present 
             (ExecutionLink
@@ -101,7 +101,7 @@
 (define-public (get-overexpress-dist gene) 
     (cog-outgoing-set (cog-execute! (Bind
         (VariableList
-            (TypedVariable (Variable "$patient") (Type "ConceptNode"))
+            (TypedVariable (Variable "$patient") (Type "PatientNode"))
             (TypedVariable (Variable "$num") (Type "NumberNode")))
         (Present 
             (ExecutionLink
@@ -124,7 +124,7 @@
 (define-public (get-underexpress-dist gene) 
     (cog-outgoing-set (cog-execute! (Bind
         (VariableList
-            (TypedVariable (Variable "$patient") (Type "ConceptNode"))
+            (TypedVariable (Variable "$patient") (Type "PatientNode"))
             (TypedVariable (Variable "$num") (Type "NumberNode")))
         (Present 
             (ExecutionLink
