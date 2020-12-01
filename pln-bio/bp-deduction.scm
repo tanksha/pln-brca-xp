@@ -18,7 +18,6 @@
 (install-suspendable-ports!)
 
 (define pred-var (Variable "$pred"))
-(define patient-var (Variable "$patient"))
 (define gene-var (Variable "$gene"))
 (define bp-var (Variable "$bp"))
 (define num-rank 50)
@@ -55,7 +54,7 @@
             (generate-patient-bp-link-rule-overexpr patient)
             (generate-patient-bp-link-rule-underexpr patient))) batch))
 
-(define (generate-patient-bp-link-rule-overexpr patinet-var)
+(define (generate-patient-bp-link-rule-overexpr patient-var)
     (cog-outgoing-set (cog-execute! (Bind 
         (VariableList
             (TypedVariable bp-var BT))
