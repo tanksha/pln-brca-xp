@@ -71,15 +71,15 @@
                 patient))))
 
 (define-public (overexpression-dist)
-    (filter (lambda (gene) 
+    (filter-map (lambda (gene) 
         (create-schema-dist gene (get-overexpress-dist gene) #t)) (cog-get-atoms 'GeneNode)))
 
 (define-public (underexpression-dist)
-    (filter (lambda (gene) 
+    (filter-map (lambda (gene) 
         (create-schema-dist gene (get-underexpress-dist gene) #f)) (cog-get-atoms 'GeneNode)))
 
 (define-public (create-schema-dist gene expr-lst overexpr?)
-    (if (null? expr-lst) #f
+    (if (null? expr-lst) '()
         (let* ((sorted-vals (sort (get-values expr-lst) less))
             (quantiles (get-quantile-borders sorted-vals bin-size))
             (num-nodes (map (lambda (q) (Number q)) quantiles)))
