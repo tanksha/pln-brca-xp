@@ -47,7 +47,7 @@
         (cog-logger-info "Done!")))
 
 (define (run-batch batch prefix overexpr?)
-    (let ((port (open-file (string-append prefix "batch_" (number->string (car batch))) "w")))
+    (let ((port (open-file (string-append prefix "batch_" (number->string (car batch)) ".scm") "w")))
         (for-each (lambda (patient)
             (if overexpr?
                 (write-result-to-file port (generate-patient-bp-link-rule-overexpr patient))
