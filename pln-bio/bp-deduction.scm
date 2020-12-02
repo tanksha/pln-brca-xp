@@ -35,23 +35,24 @@
     ;;apply fc to get the relationship between go's and patients
     (let* ((patients (cog-get-atoms 'PatientNode))
             (batch-num 0)
-            (mutex (make-mutex))
             (q (euclidean-quotient (length patients) batch-size))
             (r (euclidean-remainder (length patients) batch-size))
-            (batches (if (= r 0) (split-lst patients q) (append (split-lst (take patients (* batch-size q)) q) (cons (take-right patients r) '()))))
-            (port (if overexpr? (open-file "results/subset-bp-patient-overexpr_8.scm" "w") (open-file "results/subset-bp-patient-underexpr_8.scm" "a"))))
+            (batch-ls (if (= r 0) (split-lst patients q) (append (split-lst (take patients (* batch-size q)) q) (cons (take-right patients r) '()))))
+            (batches (map (lambda (b) (set! batch-num (+ batch-num 1)) (cons batch-num b)) batch-ls))
+            (prefix (if overexpr? "results/batches_overexpr_8/" "results/batches_underexpr_8/")))
         
+        (if (not (file-exists? prefix)) (mkdir prefix))
         (n-par-for-each (current-processor-count)  (lambda (batch)
-            (run-batch batch port overexpr?)) batches)
-        
-        (close-port port)
+            (run-batch batch prefix overexpr?)) batches)
         (cog-logger-info "Done!")))
 
-(define (run-batch batch port overexpr?)
-    (for-each (lambda (patient)
-        (if overexpr?
-            (write-result-to-file port (generate-patient-bp-link-rule-overexpr patient))
-            (write-result-to-file port (generate-patient-bp-link-rule-underexpr patient)))) batch))
+(define (run-batch batch prefix overexpr?)
+    (let ((port (open-file (string-append prefix "batch_" (number->string (car batch))) "w")))
+        (for-each (lambda (patient)
+            (if overexpr?
+                (write-result-to-file port (generate-patient-bp-link-rule-overexpr patient))
+                (write-result-to-file port (generate-patient-bp-link-rule-underexpr patient)))) (cdr batch))
+        (close-port port)))
 
 (define (generate-patient-bp-link-rule-overexpr patient-var)
     (cog-outgoing-set (cog-execute! (Bind 
