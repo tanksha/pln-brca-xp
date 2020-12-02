@@ -41,18 +41,17 @@
             (batches (if (= r 0) (split-lst patients q) (append (split-lst (take patients (* batch-size q)) q) (cons (take-right patients r) '()))))
             (port (if overexpr? (open-file "results/subset-bp-patient-overexpr_8.scm" "w") (open-file "results/subset-bp-patient-underexpr_8.scm" "a"))))
         
-        (n-for-each-par-map (current-processor-count) (lambda (res)
-            (write-result-to-file port res)) (lambda (batch)
-            (run-batch batch overexpr?)) batches)
+        (n-par-for-each (current-processor-count)  (lambda (batch)
+            (run-batch batch port overexpr?)) batches)
         
         (close-port port)
         (cog-logger-info "Done!")))
 
-(define (run-batch batch overexpr?)
-    (map (lambda (patient)
+(define (run-batch batch port overexpr?)
+    (for-each (lambda (patient)
         (if overexpr?
-            (generate-patient-bp-link-rule-overexpr patient)
-            (generate-patient-bp-link-rule-underexpr patient))) batch))
+            (write-result-to-file port (generate-patient-bp-link-rule-overexpr patient))
+            (write-result-to-file port (generate-patient-bp-link-rule-underexpr patient)))) batch))
 
 (define (generate-patient-bp-link-rule-overexpr patient-var)
     (cog-outgoing-set (cog-execute! (Bind 
