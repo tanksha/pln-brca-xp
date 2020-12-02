@@ -35,9 +35,7 @@
     ;;apply fc to get the relationship between go's and patients
     (let* ((patients (cog-get-atoms 'PatientNode))
             (batch-num 0)
-            (q (euclidean-quotient (length patients) batch-size))
-            (r (euclidean-remainder (length patients) batch-size))
-            (batch-ls (if (= r 0) (split-lst patients q) (append (split-lst (take patients (* batch-size q)) q) (cons (take-right patients r) '()))))
+            (batch-ls (split-lst patients batch-size))
             (batches (map (lambda (b) (set! batch-num (+ batch-num 1)) (cons batch-num b)) batch-ls))
             (prefix (if overexpr? "results/batches_overexpr_8/" "results/batches_underexpr_8/")))
         
@@ -300,6 +298,15 @@
             (load-kbs (list "kbs/combo.scm"))
             (create-lns-for-top-genes))))
 
-(define (split-lst lst n)
+(define-public (take-custom lst n)
+    (if (< (length lst) n)
+        (take lst (length lst))
+        (take lst n)))
+
+(define-public (drop-custom lst n)
+    (if (< (length lst) n)
+        (drop lst (length lst))
+        (drop lst n)))
+(define-public (split-lst lst n)
     (if (null? lst) '()
-        (cons (take lst n) (split-lst (drop lst n) n))))
+        (cons (take-custom lst n) (split-lst (drop-custom lst n) n))))
