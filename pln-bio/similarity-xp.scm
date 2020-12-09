@@ -13,7 +13,8 @@
 (define X (Variable "$X"))
 (define Y (Variable "$Y"))
 (define ConceptT (TypeInh "ConceptNode"))
-(define target (IntensionalSimilarity X Y))
+(define int-target (IntensionalSimilarity X Y))
+(define ext-target (ExtensionalSimilarity X Y))
 (define vardecl (VariableSet
                   (TypedVariable X ConceptT)
                   (TypedVariable Y ConceptT)))
@@ -49,7 +50,7 @@
         (pln-load-from-path "opencog/pln/rules/intensional/intensional-similarity-direct-introduction.scm")
         (pln-add-rule 'intensional-similarity-direct-introduction)
 
-        (write-atoms-to-file output-file (cog-outgoing-set (pln-bc target 
+        (write-atoms-to-file output-file (cog-outgoing-set (pln-bc int-target 
             #:vardecl vardecl
             #:maximum-iterations mi #:complexity-penalty cp)))
         (cog-logger-info "Done!")))
@@ -85,7 +86,7 @@
         (pln-load-from-path "opencog/pln/rules/extensional/extensional-similarity-direct-introduction.scm")
         (pln-add-rule 'extensional-similarity-direct-introduction)
 
-        (write-atoms-to-file output-file (cog-outgoing-set (pln-bc target 
+        (write-atoms-to-file output-file (cog-outgoing-set (pln-bc ext-target 
             #:vardecl vardecl
             #:maximum-iterations mi #:complexity-penalty cp)))
         (cog-logger-info "Done!")))
