@@ -20,16 +20,18 @@
                   (TypedVariable Y ConceptT)))
 
 (define-public (go-pathway-intensional-similarity kbs)
-   (define log-filename "logs/intensional-reasoning-test.log")
+   (define opencog-log-filename "logs/extensional-reasoning-test.log")
+   (define ure-log-filename "logs/extensional-reasoning-test-ure.log")
 
     (cog-logger-set-timestamp! #f)
+    (cog-logger-set-stdout! #t)
     (cog-logger-set-sync! #t)
     (cog-logger-set-level! "info")
-    (cog-logger-set-filename! log-filename)
+    (cog-logger-set-filename! opencog-log-filename)
     (ure-logger-set-timestamp! #f)
     (ure-logger-set-sync! #t)
     (ure-logger-set-level! "debug")
-    (ure-logger-set-filename! log-filename)
+    (ure-logger-set-filename! ure-log-filename)
 
     (let* ((rs 0) (mi 100) (cp 1)
            (param-str (string-append
