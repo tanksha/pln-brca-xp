@@ -31,13 +31,12 @@
     (ure-logger-set-level! "debug")
     (ure-logger-set-filename! log-filename)
 
-    (let* ((ss 0.001) (rs 0) (mi 100) (cp 1)
+    (let* ((rs 0) (mi 100) (cp 1)
            (param-str (string-append
                    "-rs=" (number->string rs)
-                   "-ss=" (number->string ss)
                    "-mi=" (number->string mi)
                    "-cp=" (number->string cp)))
-            (output-file (string-append "results/go-similarity" param-str ".scm"))
+            (output-file (string-append "results/sim/go-intensional-similarity" param-str ".scm"))
             (filter-in (lambda (x)
                             (or (go? x)  (inheritance-GO_term? x)
                                 (gene-memberln? x)))))
@@ -67,13 +66,12 @@
     (ure-logger-set-level! "debug")
     (ure-logger-set-filename! log-filename)
 
-    (let* ((ss 0.001) (rs 0) (mi 100) (cp 1)
+    (let* ((rs 0) (mi 100) (cp 1)
            (param-str (string-append
                    "-rs=" (number->string rs)
-                   "-ss=" (number->string ss)
                    "-mi=" (number->string mi)
                    "-cp=" (number->string cp)))
-            (output-file (string-append "results/pathway-go-bp-similarity" param-str ".scm"))
+            (output-file (string-append "results/sim/go-extensional-similarity" param-str ".scm"))
             (filter-in (lambda (x)
                             (or (go? x) (inheritance-GO_term? x)
                                 (gene-memberln? x)))))
