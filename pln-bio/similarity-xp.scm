@@ -38,7 +38,7 @@
                    "-cp=" (number->string cp)))
             (output-file (string-append "results/go-similarity" param-str ".scm"))
             (filter-in (lambda (x)
-                            (or (go? x)  (inheritance-GO? x)
+                            (or (go? x)  (inheritance-GO_term? x)
                                 (gene-memberln? x)))))
 
         ;;Preprocessing step
@@ -74,7 +74,7 @@
                    "-cp=" (number->string cp)))
             (output-file (string-append "results/pathway-go-bp-similarity" param-str ".scm"))
             (filter-in (lambda (x)
-                            (or (go? x) (inheritance-GO? x)
+                            (or (go? x) (inheritance-GO_term? x)
                                 (gene-memberln? x)))))
 
         ;;Preprocessing step
