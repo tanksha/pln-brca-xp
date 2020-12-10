@@ -99,7 +99,7 @@
         
 (define-public (inheritance-GO? A)
   (and (eq? (cog-type A) 'InheritanceLink)
-        (go_bp? (gdr A))))
+        (go? (gdr A))))
 
 (define-public (get-smps)
   (cog-get-atoms 'SmpNode))
