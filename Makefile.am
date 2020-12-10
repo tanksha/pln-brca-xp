@@ -10,7 +10,8 @@ SOURCES = \
 	pln-bio/expr.scm \
 	pln-bio/combo-preprocess.scm \
 	pln-bio/bp-deduction.scm \
-    pln-bio/similarity-xp.scm
+    pln-bio/similarity-xp.scm \
+	pln-bio/concept-deduction.scm
 
 
 abstopdir=$(abspath $(lastword $(srcdir)))/
