@@ -4,7 +4,7 @@
 )
 
 (define-public go-types (list (Type "BiologicalProcessNode") (Type "CellularComponentNode")
-    "MolecularFunctionNode"))
+    (Type "MolecularFunctionNode")))
 
 (define-public pathway-types (list (Type "ReactomeNode") (Type "SmpNode") (Type "PharmGkbNode")))
 
