@@ -116,7 +116,8 @@
 
 
 (define* (preprocess kbs #:key (filter-in #f))
-   (let ((scm-filename (string-append "results/sim/preprocess-kbs-asv2" param-str ".scm")))
+   (let ((scm-filename (string-append "results/sim/preprocess-kbs-asv2" param-str ".scm"))
+         (port (open-file scm-file "a")))
 
     ;;load kbs
     (cog-logger-info "Loading kbs")
@@ -124,19 +125,18 @@
         (load-kbs kbs #:subsmp ss #:filter-in filter-in)
         (load-kbs kbs #:subsmp ss))
 
-    (write-atoms-to-file scm-filename (inheritance->subset))
+    (write-result-to-file port (inheritance->subset))
     (cog-logger-info "Calculating GO Categories tvs")
-    (write-atoms-to-file scm-filename (calculate-go/pathway-tvs (get-go-categories)))
+    (write-result-to-file port (calculate-go/pathway-tvs (get-go-categories)))
     (cog-logger-info "Calculating Pathway tvs")
-    (write-atoms-to-file scm-filename (calculate-go/pathway-tvs (get-pathways)))
+    ; (write-result-to-file port (calculate-go/pathway-tvs (get-pathways)))
     (cog-logger-info "Running BC: subset-introduction")
-    (write-atoms-to-file scm-filename (generate-subset))
+    (write-result-to-file port (generate-subset))
     (cog-logger-info "Running BC: subset-negation")
-    (write-atoms-to-file scm-filename (generate-subset-negation))
+    (write-result-to-file port (generate-subset-negation))
     ; (cog-logger-info "Getting inverse Pathway Subsets")
-    ; (write-atoms-to-file scm-filename (get-inverse-subsets (get-pathway-subsets)))
+    ; (write-result-to-file port (get-inverse-subsets (get-pathway-subsets)))
     (cog-logger-info "Running BC: subset->attraction")
-    (write-atoms-to-file scm-filename (subset->attraction))
+    (write-result-to-file port (subset->attraction))
     (cog-logger-info "Preprocessing done!")
-
-    scm-filename))
+    (close-port port)))
