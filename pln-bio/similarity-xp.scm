@@ -28,8 +28,8 @@
 
 
 (define-public (go-pathway-intensional-similarity kbs)
-   (define opencog-log-filename "logs/extensional-reasoning-test.log")
-   (define ure-log-filename "logs/extensional-reasoning-test-ure.log")
+   (define opencog-log-filename "logs/intensional-reasoning-test.log")
+   (define ure-log-filename "logs/intensional-reasoning-test-ure.log")
 
     (cog-logger-set-filename! opencog-log-filename)
     (ure-logger-set-filename! ure-log-filename)
@@ -45,7 +45,7 @@
                                 (gene-memberln? x)))))
 
         ;;Preprocessing step
-        (preprocess kbs #:filter-in filter-in)
+        (preprocess-int kbs #:filter-in filter-in)
         ;; Load PLN
         (cog-logger-info "Running BC: Attraction->IntensionalSimilarity")
         (pln-clear)
@@ -75,7 +75,7 @@
                                 (gene-memberln? x)))))
 
         ;;Preprocessing step
-        (preprocess kbs #:filter-in filter-in)
+        (preprocess-ext kbs #:filter-in filter-in)
         ;; Load PLN
         (cog-logger-info "Running BC: Attraction->ExtensionalSimilarity")
         (pln-clear)

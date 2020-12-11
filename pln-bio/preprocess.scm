@@ -9,7 +9,7 @@
     #:use-module (pln-bio bio-utils)
     #:use-module (pln-bio rule-utils)
     #:use-module (ice-9 threads)
-    #:export (preprocess)
+    #:export (preprocess-int preprocess-ext)
 )
 
 ;; Parameters
@@ -109,7 +109,7 @@
                                             #:complexity-penalty cp))))
 
 
-(define* (preprocess kbs #:key (filter-in #f))
+(define* (preprocess-int kbs #:key (filter-in #f))
    (let* ((scm-filename (string-append "results/sim/preprocess-kbs-asv2" param-str ".scm"))
          (port (open-file scm-filename "a")))
 
@@ -131,5 +131,24 @@
     (generate-subset-negation port)
     (cog-logger-info "Running BC: subset->attraction")
     (subset->attraction port)
+    (cog-logger-info "Preprocessing done!")
+    (close-port port)))
+
+(define* (preprocess-ext kbs #:key (filter-in #f))
+   (let* ((scm-filename (string-append "results/sim/preprocess-kbs-asv2" param-str ".scm"))
+         (port (open-file scm-filename "a")))
+
+    ;;load kbs
+    (cog-logger-info "Loading kbs")
+    (if filter-in
+        (load-kbs kbs #:subsmp ss #:filter-in filter-in)
+        (load-kbs kbs #:subsmp ss))
+
+    (cog-logger-info "Running FC: inheritance->subset")
+    (inheritance->subset port)
+    (cog-logger-info "Calculating GO Categories tvs")
+    (calculate-go/pathway-tvs (get-go-categories))
+    (cog-logger-info "Calculating Pathway tvs")
+    ; (calculate-go/pathway-tvs (get-pathways) port)
     (cog-logger-info "Preprocessing done!")
     (close-port port)))
