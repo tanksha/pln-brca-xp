@@ -12,9 +12,11 @@
       (VariableSet
         (TypedVariable A A-type)
         (TypedVariable B B-type))
-      (Present
-        A
-        B)
+      (And 
+        (Present
+          A
+          B)
+        (Not (Equal A B)))
       (ExecutionOutput
         (GroundedSchema "scm: extensional-similarity-direct-introduction")
         (List
@@ -78,7 +80,7 @@
 	 (mbrs (lset-union equal? A-mbrs B-mbrs))
 	 (dnt (ext-sim-denominator A B mbrs))
 	 (tv-strength (if (< 0 dnt) (/ (ext-sim-numerator A B-mbr-lnks) dnt) 1))
-	 (tv-confidence (count->confidence (length B-mbrs)))
+	 (tv-confidence (count->confidence (length mbrs)))
 	 (tv (stv tv-strength tv-confidence)))
     tv))
 
