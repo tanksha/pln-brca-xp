@@ -4,7 +4,8 @@
   (let* ((A (Variable "$A"))
            (B (Variable "$B"))
            (A-type (TypeChoice A-types))
-           (B-type (TypeChoice B-types)))
+           (B-type (TypeChoice B-types))
+           (CT (TypeInh "ConceptNode")))
     (Bind
       (VariableSet
         (TypedVariable A A-type)

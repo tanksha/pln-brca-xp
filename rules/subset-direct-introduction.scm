@@ -1,5 +1,6 @@
 (use-modules (pln-bio rule-utils))
 
+(load-from-path "opencog/pln/rules/extensional/extensional-utils.scm")
 ;; Rule generator for subset introduction with specific type
 (define-public (gen-subset-direct-introduction A-types B-types)
     (let* ((A (Variable "$A"))
