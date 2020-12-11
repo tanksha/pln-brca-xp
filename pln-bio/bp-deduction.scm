@@ -69,7 +69,8 @@
                             (VariableNode "$gene"))
                             patient-var)               
                     (Member (Variable "$gene") bp-var)
-                    (Member (Variable "$gene") (Concept "top-ranked")))))
+                    ; (Member (Variable "$gene") (Concept "top-ranked"))
+                    )))
             
         (ExecutionOutputLink
             (GroundedSchemaNode "scm: generate-subset-tv-overexpr")

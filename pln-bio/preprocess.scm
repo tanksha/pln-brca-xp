@@ -7,6 +7,7 @@
     #:use-module (opencog pln)
     #:use-module (opencog bioscience)
     #:use-module (pln-bio bio-utils)
+    #:use-module (pln-bio rule-utils)
     #:export (preprocess)
 )
 
@@ -19,12 +20,14 @@
 
 ;; Defining this in a let scope causes segmentation fault
 (define-public ConceptT (TypeInh "ConceptNode"))
+(define-public GOT (TypeChoice go-types))
+(define-public PathwayT (TypeChoice pathway-types))
 (define-public GeneT (Type "GeneNode"))
 (define-public X (Variable "$X"))
 (define-public Y (Variable "$Y"))
 (define-public vardecl (VariableSet
-                  (TypedVariable X ConceptT)
-                  (TypedVariable Y ConceptT)))
+                  (TypedVariable X GOT)
+                  (TypedVariable Y GOT)))
 (define-public source (Inheritance X Y))
 ;; Parameters string
 (define param-str (string-append
@@ -83,11 +86,18 @@
 
 (define (generate-subset)
     (pln-clear)
-    (pln-load-from-path "opencog/pln/rules/extensional/subset-direct-introduction.scm")
-    (pln-load-from-path "opencog/pln/rules/term/condition-negation.scm")
+    (pln-load-from-file (get-full-path "rules/subset-direct-introduction.scm"))
     (pln-add-rule 'subset-direct-introduction)
-    (pln-add-rule 'subset-condition-negation)
     (define target (Subset X Y))
+    (filter all-nodes-non-null-mean? (cog-outgoing-set (pln-bc target #:vardecl vardecl
+                                            #:maximum-iterations mi
+                                            #:complexity-penalty cp))))
+
+(define (generate-subset-negation)
+    (pln-clear)
+    (pln-load-from-file (get-full-path "rules/subset-negation.scm"))
+    (pln-add-rule 'subset-condition-negation)
+    (define target (Subset (Not X) Y))
     (filter all-nodes-non-null-mean? (cog-outgoing-set (pln-bc target #:vardecl vardecl
                                             #:maximum-iterations mi
                                             #:complexity-penalty cp)))
@@ -97,7 +107,7 @@
    ;; Run backward chainer to produce attraction links. 
     ;; Add required PLN rules
     (pln-clear)
-    (pln-load-from-path "opencog/pln/rules/intensional/attraction-introduction.scm")
+    (pln-load-from-file (get-full-path "rules/attraction-introduction.scm"))
     (pln-add-rule 'subset-attraction-introduction)
     (define target (Attraction X Y))
     (filter all-nodes-non-null-mean? (cog-outgoing-set (pln-bc target #:vardecl vardecl
@@ -119,8 +129,10 @@
     (write-atoms-to-file scm-filename (calculate-go/pathway-tvs (get-go-categories)))
     (cog-logger-info "Calculating Pathway tvs")
     (write-atoms-to-file scm-filename (calculate-go/pathway-tvs (get-pathways)))
-    (cog-logger-info "Running BC: subset-generation")
+    (cog-logger-info "Running BC: subset-introduction")
     (write-atoms-to-file scm-filename (generate-subset))
+    (cog-logger-info "Running BC: subset-negation")
+    (write-atoms-to-file scm-filename (generate-subset-negation))
     ; (cog-logger-info "Getting inverse Pathway Subsets")
     ; (write-atoms-to-file scm-filename (get-inverse-subsets (get-pathway-subsets)))
     (cog-logger-info "Running BC: subset->attraction")

@@ -2,6 +2,12 @@
     #:use-module (opencog)
     #:use-module (opencog exec)
 )
+
+(define-public go-types (list (Type "BiologicalProcessNode") (Type "CellularComponentNode")
+    "MolecularFunctionNode"))
+
+(define-public pathway-types (list (Type "ReactomeNode") (Type "SmpNode") (Type "PharmGkbNode")))
+
 ;; Useful rule generators
 
 ;;;;;;;;;;;;;;;;;

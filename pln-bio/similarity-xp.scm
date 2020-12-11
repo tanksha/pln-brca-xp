@@ -13,24 +13,25 @@
 (define X (Variable "$X"))
 (define Y (Variable "$Y"))
 (define ConceptT (TypeInh "ConceptNode"))
-(define int-target (IntensionalSimilarity X Y))
-(define ext-target (ExtensionalSimilarity X Y))
 (define vardecl (VariableSet
-                  (TypedVariable X ConceptT)
-                  (TypedVariable Y ConceptT)))
+                  (TypedVariable X GOT)
+                  (TypedVariable Y GOT)))
+
+;;logger settings
+(cog-logger-set-timestamp! #f)
+(cog-logger-set-stdout! #t)
+(cog-logger-set-sync! #t)
+(cog-logger-set-level! "info")
+(ure-logger-set-timestamp! #f)
+(ure-logger-set-sync! #t)
+(ure-logger-set-level! "debug")
+
 
 (define-public (go-pathway-intensional-similarity kbs)
    (define opencog-log-filename "logs/extensional-reasoning-test.log")
    (define ure-log-filename "logs/extensional-reasoning-test-ure.log")
 
-    (cog-logger-set-timestamp! #f)
-    (cog-logger-set-stdout! #t)
-    (cog-logger-set-sync! #t)
-    (cog-logger-set-level! "info")
     (cog-logger-set-filename! opencog-log-filename)
-    (ure-logger-set-timestamp! #f)
-    (ure-logger-set-sync! #t)
-    (ure-logger-set-level! "debug")
     (ure-logger-set-filename! ure-log-filename)
 
     (let* ((rs 0) (mi 100) (cp 1)
@@ -48,10 +49,10 @@
         ;; Load PLN
         (cog-logger-info "Running BC: Attraction->IntensionalSimilarity")
         (pln-clear)
-        (pln-load-from-path "opencog/pln/rules/intensional/intensional-similarity-direct-introduction.scm")
+        (pln-load-from-file (get-full-path "rules/intensional-similarity-direct-introduction.scm"))
         (pln-add-rule 'intensional-similarity-direct-introduction)
-
-        (write-atoms-to-file output-file (cog-outgoing-set (pln-bc int-target 
+        (define target (IntensionalSimilarity X Y))
+        (write-atoms-to-file output-file (cog-outgoing-set (pln-bc target 
             #:vardecl vardecl
             #:maximum-iterations mi #:complexity-penalty cp)))
         (cog-logger-info "Done!")))
@@ -60,14 +61,7 @@
    (define opencog-log-filename "logs/extensional-reasoning-test.log")
    (define ure-log-filename "logs/extensional-reasoning-test-ure.log")
 
-    (cog-logger-set-timestamp! #f)
-    (cog-logger-set-stdout! #t)
-    (cog-logger-set-sync! #t)
-    (cog-logger-set-level! "info")
     (cog-logger-set-filename! opencog-log-filename)
-    (ure-logger-set-timestamp! #f)
-    (ure-logger-set-sync! #t)
-    (ure-logger-set-level! "debug")
     (ure-logger-set-filename! ure-log-filename)
 
     (let* ((rs 0) (mi 100) (cp 1)
@@ -85,10 +79,10 @@
         ;; Load PLN
         (cog-logger-info "Running BC: Attraction->ExtensionalSimilarity")
         (pln-clear)
-        (pln-load-from-path "opencog/pln/rules/extensional/extensional-similarity-direct-introduction.scm")
+        (pln-load-from-path (get-full-path "rules/extensional-similarity-direct-introduction.scm"))
         (pln-add-rule 'extensional-similarity-direct-introduction)
-
-        (write-atoms-to-file output-file (cog-outgoing-set (pln-bc ext-target 
+        (define target (ExtensionalSimilarity X Y))
+        (write-atoms-to-file output-file (cog-outgoing-set (pln-bc target 
             #:vardecl vardecl
             #:maximum-iterations mi #:complexity-penalty cp)))
         (cog-logger-info "Done!")))
