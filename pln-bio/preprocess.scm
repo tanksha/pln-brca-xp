@@ -112,7 +112,7 @@
 
 (define* (preprocess kbs #:key (filter-in #f))
    (let ((scm-filename (string-append "results/sim/preprocess-kbs-asv2" param-str ".scm"))
-         (port (open-file scm-file "a")))
+         (port (open-file scm-filename "a")))
 
     ;;load kbs
     (cog-logger-info "Loading kbs")
