@@ -96,6 +96,10 @@
 (define-public (inheritance-GO_bp? A)
   (and (eq? (cog-type A) 'InheritanceLink)
         (go_bp? (gdr A))))
+        
+(define-public (inheritance-GO? A)
+  (and (eq? (cog-type A) 'InheritanceLink)
+        (go? (gdr A))))
 
 (define-public (get-smps)
   (cog-get-atoms 'SmpNode))
@@ -125,6 +129,11 @@
   (and (eq? (cog-type A) 'MemberLink)
     (eq? (cog-type (gar A)) 'GeneNode)
     (or (pathway? (gdr A)) (go_bp? (gdr A)))))
+
+(define-public (gene-memberln-all? A)
+  (and (eq? (cog-type A) 'MemberLink)
+    (eq? (cog-type (gar A)) 'GeneNode)
+    (or (pathway? (gdr A)) (go? (gdr A)))))
 
 (define-public (get-pathways)
   (append (cog-get-atoms 'ReactomeNode) (cog-get-atoms 'SmpNode) (cog-get-atoms 'PharmGkbNode)))
