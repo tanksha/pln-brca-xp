@@ -56,7 +56,7 @@
 
     (n-par-for-each (current-processor-count) (lambda (x)
         (if (all-nodes-non-null-mean? x)
-            (begin (cog-set-tv! x (stv 1 1)) (write-result-to-file port x))))
+            (begin (cog-set-tv! x (stv 1 1)) (write x port))))
         (cog-outgoing-set (pln-fc source
             #:vardecl vardecl
             #:maximum-iterations mi
@@ -79,7 +79,7 @@
     (pln-add-rule 'subset-direct-introduction)
     (define target (Subset X Y))
     (n-par-for-each (current-processor-count) (lambda (x)  
-        (if (all-nodes-non-null-mean? x) (write-result-to-file port x)))                     
+        (if (all-nodes-non-null-mean? x) (write x port)))                     
                             (cog-outgoing-set (pln-bc target #:vardecl vardecl
                                             #:maximum-iterations mi
                                             #:complexity-penalty cp))))
@@ -90,11 +90,10 @@
     (pln-add-rule 'subset-condition-negation)
     (define target (Subset (Not X) Y))
     (n-par-for-each (current-processor-count) (lambda (x)
-        (if (all-nodes-non-null-mean? x) (write-result-to-file port x)))  
+        (if (all-nodes-non-null-mean? x) (write x port)))  
                             (cog-outgoing-set (pln-bc target #:vardecl vardecl
                                             #:maximum-iterations mi
-                                            #:complexity-penalty cp)))
-)
+                                            #:complexity-penalty cp))))
 
 (define (subset->attraction port)
    ;; Run backward chainer to produce attraction links. 
@@ -104,7 +103,7 @@
     (pln-add-rule 'subset-attraction-introduction)
     (define target (Attraction X Y))
     (n-par-for-each (current-processor-count) (lambda (x)
-                (if (all-nodes-non-null-mean? x) (write-result-to-file port x)))                     
+                (if (all-nodes-non-null-mean? x) (write x port)))                     
                             (cog-outgoing-set (pln-bc target #:vardecl vardecl
                                             #:maximum-iterations mi
                                             #:complexity-penalty cp))))

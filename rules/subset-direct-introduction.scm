@@ -1,4 +1,5 @@
 (use-modules (pln-bio rule-utils))
+(use-modules (srfi srfi-1))
 
 (load-from-path "opencog/pln/rules/extensional/extensional-utils.scm")
 ;; Rule generator for subset introduction with specific type
