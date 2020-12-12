@@ -49,7 +49,7 @@
         ;; Load PLN
         (cog-logger-info "Running BC: Attraction->IntensionalSimilarity")
         (pln-clear)
-        (pln-load-from-path "pln-bio/rules/intensional-similarity-direct-introduction.scm")
+        (pln-load-from-path "pln-bio/rules/intensional-similarity.scm")
         (pln-add-rule 'intensional-similarity-direct-introduction)
         (define target (IntensionalSimilarity X Y))
         (write-atoms-to-file output-file (cog-outgoing-set (pln-bc target 
@@ -79,7 +79,7 @@
         ;; Load PLN
         (cog-logger-info "Running BC: Attraction->ExtensionalSimilarity")
         (pln-clear)
-        (pln-load-from-path "pln-bio/rules/extensional-similarity-direct-introduction.scm")
+        (pln-load-from-path "pln-bio/rules/extensional-similarity.scm")
         (pln-add-rule 'extensional-similarity-direct-introduction)
         (define target (ExtensionalSimilarity X Y))
         (write-atoms-to-file output-file (cog-outgoing-set (pln-bc target 
