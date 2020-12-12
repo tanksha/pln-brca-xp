@@ -1,6 +1,12 @@
+(define-module (pln-bio rules transitivity)
+   #:use-module (opencog) 
+   #:use-module (opencog exec) 
+   #:use-module (opencog ure) 
+   #:use-module (opencog logger)
+   #:use-module (srfi srfi-1)
+   #:use-module (pln-bio rules rule-utils)
+)
 ;; Crisp rules about transitivity of predicates or inheritance links
-
-(use-modules (pln-bio rule-utils))
 
 ;; Helpers
 (define ConceptT (TypeInh "ConceptNode"))

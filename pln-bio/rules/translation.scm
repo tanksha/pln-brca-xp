@@ -1,3 +1,11 @@
+(define-module (pln-bio rules translation)
+   #:use-module (opencog) 
+   #:use-module (opencog exec) 
+   #:use-module (opencog ure) 
+   #:use-module (opencog logger)
+   #:use-module (srfi srfi-1)
+   #:use-module (pln-bio rules rule-utils)
+)
 ;; Crisp rules about translating a link into another link
 
 (use-modules (pln-bio rule-utils))

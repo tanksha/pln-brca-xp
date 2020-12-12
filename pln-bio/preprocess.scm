@@ -7,14 +7,14 @@
     #:use-module (opencog pln)
     #:use-module (opencog bioscience)
     #:use-module (pln-bio bio-utils)
-    #:use-module (pln-bio rule-utils)
+    #:use-module (pln-bio rules rule-utils)
     #:use-module (ice-9 threads)
     #:export (preprocess-int preprocess-ext)
 )
 
 ;; Parameters
 (define-public rs 0) ; Random seed
-(define-public ss 1) ; Subsampled portion of the KBs
+(define-public ss 0.3) ; Subsampled portion of the KBs
 (define-public mi 12); Maximum number of iterations
 (define-public cp 10); Complexity penalty
 (define-public fra #t); Whether rules are fully applied
@@ -46,8 +46,8 @@
     ;; Load PLN
     (cog-logger-info "Loading PLN rules")
     (pln-clear)
-    (pln-load-from-file (get-full-path "rules/translation.scm"))
-    (pln-load-from-file (get-full-path "rules/transitivity.scm"))
+    (pln-load-from-path "pln-bio/rules/translation.scm")
+    (pln-load-from-path "pln-bio/rules/transitivity.scm")
     (pln-add-rule 'present-inheritance-to-subset-translation)
     (pln-add-rule 'present-subset-transitivity)
     (pln-add-rule 'present-mixed-member-subset-transitivity)
@@ -75,7 +75,7 @@
 
 (define (generate-subset port)
     (pln-clear)
-    (pln-load-from-file (get-full-path "rules/subset-direct-introduction.scm"))
+    (pln-load-from-file "pln-bio/rules/subset-direct-introduction.scm")
     (pln-add-rule 'subset-direct-introduction)
     (define target (Subset X Y))
     (n-par-for-each (current-processor-count) (lambda (x)  
@@ -86,7 +86,7 @@
 
 (define (generate-subset-negation port)
     (pln-clear)
-    (pln-load-from-file (get-full-path "rules/subset-negation.scm"))
+    (pln-load-from-file "pln-bio/rules/subset-negation.scm")
     (pln-add-rule 'subset-condition-negation)
     (define target (Subset (Not X) Y))
     (n-par-for-each (current-processor-count) (lambda (x)
@@ -99,7 +99,7 @@
    ;; Run backward chainer to produce attraction links. 
     ;; Add required PLN rules
     (pln-clear)
-    (pln-load-from-file (get-full-path "rules/attraction-introduction.scm"))
+    (pln-load-from-file "pln-bio/rules/attraction-introduction.scm")
     (pln-add-rule 'subset-attraction-introduction)
     (define target (Attraction X Y))
     (n-par-for-each (current-processor-count) (lambda (x)
@@ -110,7 +110,7 @@
 
 
 (define* (preprocess-int kbs #:key (filter-in #f))
-   (let* ((scm-filename (string-append "results/sim/preprocess-kbs-asv2" param-str ".scm"))
+   (let* ((scm-filename (string-append "results/sim/intensional/preprocess-kbs-asv2" param-str ".scm"))
          (port (open-file scm-filename "a")))
 
     ;;load kbs
@@ -135,7 +135,7 @@
     (close-port port)))
 
 (define* (preprocess-ext kbs #:key (filter-in #f))
-   (let* ((scm-filename (string-append "results/sim/preprocess-kbs-asv2" param-str ".scm"))
+   (let* ((scm-filename (string-append "results/sim/extensional/preprocess-kbs-asv2" param-str ".scm"))
          (port (open-file scm-filename "a")))
 
     ;;load kbs

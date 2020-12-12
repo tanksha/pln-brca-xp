@@ -1,10 +1,15 @@
-(use-modules (pln-bio rule-utils))
-(use-modules (opencog) (opencog exec) (opencog ure) (opencog logger))
-(use-modules (srfi srfi-1))
-(load "extensional-utils.scm")
+(define-module (pln-bio rules extensional-similarity)
+   #:use-module (opencog) 
+   #:use-module (opencog exec) 
+   #:use-module (opencog ure) 
+   #:use-module (opencog logger)
+   #:use-module (srfi srfi-1)
+   #:use-module (pln-bio rules rule-utils)
+   #:use-module (pln-bio rules extensional-utils)
+)
 
 ;; Rule
-(define (gen-extensional-similarity-direct-introduction-rule A-types B-types)
+(define-public (gen-extensional-similarity-direct-introduction-rule A-types B-types)
   (let* ((A (Variable "$A"))
         (B (Variable "$B"))
         (A-type (TypeChoice A-types))
@@ -96,7 +101,7 @@
              (tv (ext-sim-evidence->tv A B)))
         (cog-merge-hi-conf-tv! Sim tv))))
 
-(define extensional-similarity-direct-introduction-rule (gen-extensional-similarity-direct-introduction-rule go-types go-types))
+(define-public extensional-similarity-direct-introduction-rule (gen-extensional-similarity-direct-introduction-rule go-types go-types))
 
 (define extensional-similarity-direct-introduction-rule-name
   (DefinedSchemaNode "extensional-similarity-direct-introduction-rule"))

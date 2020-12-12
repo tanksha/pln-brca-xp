@@ -1,7 +1,13 @@
-(use-modules (pln-bio rule-utils))
-(use-modules (srfi srfi-1))
+(define-module (pln-bio rules subset-introduction)
+   #:use-module (opencog) 
+   #:use-module (opencog exec) 
+   #:use-module (opencog ure) 
+   #:use-module (opencog logger)
+   #:use-module (srfi srfi-1)
+   #:use-module (pln-bio rules rule-utils)
+   #:use-module (pln-bio rules extensional-utils)
+)
 
-(load-from-path "opencog/pln/rules/extensional/extensional-utils.scm")
 ;; Rule generator for subset introduction with specific type
 (define-public (gen-subset-direct-introduction A-types B-types)
     (let* ((A (Variable "$A"))

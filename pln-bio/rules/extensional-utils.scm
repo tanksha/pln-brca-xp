@@ -1,3 +1,7 @@
+(define-module (pln-bio rules extensional-utils)
+   #:use-module (opencog)
+   #:use-module (opencog exec)
+)
 ;; Helpers for rules pertaining to extensional reasoning 
 
 (define (variable? X)
@@ -7,7 +11,7 @@
   (or (equal? (cog-type X) 'VariableNode)
       (equal? (cog-type X) 'GlobNode)))
 
-(define (get-member-links-of C)
+(define-public (get-member-links-of C)
 "
   Given C, return all its member links,
   (except link with variable as member).
@@ -19,7 +23,7 @@
 				  (not (variable? (gar x)))))))
     (filter nonvar-mbr-of-C? mbr-lnks)))
 
-(define (get-members-of C)
+(define-public (get-members-of C)
 "
   Given C, return all its members (except variables)
 "

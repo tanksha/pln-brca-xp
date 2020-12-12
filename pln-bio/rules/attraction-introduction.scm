@@ -1,7 +1,13 @@
+(define-module (pln-bio rules attraction-introduction)
+   #:use-module (opencog) 
+   #:use-module (opencog exec) 
+   #:use-module (opencog ure) 
+   #:use-module (opencog logger)
+   #:use-module (srfi srfi-1)
+   #:use-module (pln-bio rules rule-utils)
+)
 
-(use-modules (pln-bio rule-utils))
-
-(define (gen-subset-attraction-introduction-rule A-types B-types)
+(define-public (gen-subset-attraction-introduction-rule A-types B-types)
   (let* ((A (Variable "$A"))
         (B (Variable "$B"))
         (A-type (TypeChoice A-types))

@@ -1,6 +1,7 @@
-(define-module (pln-bio rule-utils)
+(define-module (pln-bio rules rule-utils)
     #:use-module (opencog)
     #:use-module (opencog exec)
+    #:use-module (opencog bioscience)
 )
 
 (define-public go-types (list (Type "BiologicalProcessNode") (Type "CellularComponentNode")

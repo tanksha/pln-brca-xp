@@ -39,7 +39,7 @@
                    "-rs=" (number->string rs)
                    "-mi=" (number->string mi)
                    "-cp=" (number->string cp)))
-            (output-file (string-append "results/sim/go-intensional-similarity" param-str ".scm"))
+            (output-file (string-append "results/sim/intensional/go-intensional-similarity" param-str ".scm"))
             (filter-in (lambda (x)
                             (or (go? x)  (inheritance-GO_term? x)
                                 (gene-memberln? x)))))
@@ -49,7 +49,7 @@
         ;; Load PLN
         (cog-logger-info "Running BC: Attraction->IntensionalSimilarity")
         (pln-clear)
-        (pln-load-from-file (get-full-path "rules/intensional-similarity-direct-introduction.scm"))
+        (pln-load-from-path "pln-bio/rules/intensional-similarity-direct-introduction.scm")
         (pln-add-rule 'intensional-similarity-direct-introduction)
         (define target (IntensionalSimilarity X Y))
         (write-atoms-to-file output-file (cog-outgoing-set (pln-bc target 
@@ -69,7 +69,7 @@
                    "-rs=" (number->string rs)
                    "-mi=" (number->string mi)
                    "-cp=" (number->string cp)))
-            (output-file (string-append "results/sim/go-extensional-similarity" param-str ".scm"))
+            (output-file (string-append "results/sim/extensional/go-extensional-similarity" param-str ".scm"))
             (filter-in (lambda (x)
                             (or (go? x) (inheritance-GO_term? x)
                                 (gene-memberln? x)))))
@@ -79,7 +79,7 @@
         ;; Load PLN
         (cog-logger-info "Running BC: Attraction->ExtensionalSimilarity")
         (pln-clear)
-        (pln-load-from-file (get-full-path "rules/extensional-similarity-direct-introduction.scm"))
+        (pln-load-from-path "pln-bio/rules/extensional-similarity-direct-introduction.scm")
         (pln-add-rule 'extensional-similarity-direct-introduction)
         (define target (ExtensionalSimilarity X Y))
         (write-atoms-to-file output-file (cog-outgoing-set (pln-bc target 
