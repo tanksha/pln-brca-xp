@@ -1,6 +1,7 @@
 (use-modules (pln-bio rule-utils))
-
-(load-from-path "opencog/pln/rules/extensional/extensional-utils.scm")
+(use-modules (opencog) (opencog exec) (opencog ure) (opencog logger))
+(use-modules (srfi srfi-1))
+(load "extensional-utils.scm")
 
 ;; Rule
 (define (gen-extensional-similarity-direct-introduction-rule A-types B-types)

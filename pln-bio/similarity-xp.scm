@@ -79,7 +79,7 @@
         ;; Load PLN
         (cog-logger-info "Running BC: Attraction->ExtensionalSimilarity")
         (pln-clear)
-        (pln-load-from-path (get-full-path "rules/extensional-similarity-direct-introduction.scm"))
+        (pln-load-from-file (get-full-path "rules/extensional-similarity-direct-introduction.scm"))
         (pln-add-rule 'extensional-similarity-direct-introduction)
         (define target (ExtensionalSimilarity X Y))
         (write-atoms-to-file output-file (cog-outgoing-set (pln-bc target 
