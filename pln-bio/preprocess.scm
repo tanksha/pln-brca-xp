@@ -15,7 +15,7 @@
 ;; Parameters
 (define-public rs 0) ; Random seed
 (define-public ss 0.3) ; Subsampled portion of the KBs
-(define-public mi 12); Maximum number of iterations
+(define-public mi 3); Maximum number of iterations
 (define-public cp 10); Complexity penalty
 (define-public fra #t); Whether rules are fully applied
 
@@ -81,7 +81,7 @@
 
 (define (generate-subset port)
     (pln-clear)
-    (pln-load-from-file "pln-bio/rules/subset-direct-introduction.scm")
+    (pln-load-from-file "pln-bio/rules/subset-introduction.scm")
     (pln-add-rule 'subset-direct-introduction)
     (define target (Subset X Y))
     (n-par-for-each (current-processor-count) (lambda (x)  
