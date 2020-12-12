@@ -30,6 +30,10 @@
                   (TypedVariable X GOT)
                   (TypedVariable Y GOT)))
 (define-public source (Inheritance X Y))
+
+;;mutext to control file write access
+(define mtx (make-mutex))
+
 ;; Parameters string
 (define param-str (string-append
                    "-rs=" (number->string rs)
@@ -56,7 +60,9 @@
 
     (n-par-for-each (current-processor-count) (lambda (x)
         (if (all-nodes-non-null-mean? x)
-            (begin (cog-set-tv! x (stv 1 1)) (write x port))))
+            (begin (cog-set-tv! x (stv 1 1)) 
+                (if (lock-mutex mtx)
+                    (begin (write x port) (unlock-mutex mtx))))))
         (cog-outgoing-set (pln-fc source
             #:vardecl vardecl
             #:maximum-iterations mi
@@ -79,7 +85,9 @@
     (pln-add-rule 'subset-direct-introduction)
     (define target (Subset X Y))
     (n-par-for-each (current-processor-count) (lambda (x)  
-        (if (all-nodes-non-null-mean? x) (write x port)))                     
+        (if (all-nodes-non-null-mean? x) 
+            (if (lock-mutex mtx)
+                (begin (write x port) (unlock-mutex mtx)))))                     
                             (cog-outgoing-set (pln-bc target #:vardecl vardecl
                                             #:maximum-iterations mi
                                             #:complexity-penalty cp))))
@@ -90,7 +98,9 @@
     (pln-add-rule 'subset-condition-negation)
     (define target (Subset (Not X) Y))
     (n-par-for-each (current-processor-count) (lambda (x)
-        (if (all-nodes-non-null-mean? x) (write x port)))  
+        (if (all-nodes-non-null-mean? x) 
+           (if (lock-mutex mtx)
+                (begin (write x port) (unlock-mutex mtx)))))  
                             (cog-outgoing-set (pln-bc target #:vardecl vardecl
                                             #:maximum-iterations mi
                                             #:complexity-penalty cp))))
@@ -103,7 +113,9 @@
     (pln-add-rule 'subset-attraction-introduction)
     (define target (Attraction X Y))
     (n-par-for-each (current-processor-count) (lambda (x)
-                (if (all-nodes-non-null-mean? x) (write x port)))                     
+                (if (all-nodes-non-null-mean? x) 
+                    (if (lock-mutex mtx)
+                        (begin (write x port) (unlock-mutex mtx)))))                     
                             (cog-outgoing-set (pln-bc target #:vardecl vardecl
                                             #:maximum-iterations mi
                                             #:complexity-penalty cp))))
