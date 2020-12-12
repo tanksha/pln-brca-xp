@@ -6,6 +6,7 @@ SOURCES = \
     pln-bio/bio-utils.scm \
     pln-bio/ure-utils.scm \
 	pln-bio/rules/rule-utils.scm \
+	pln-bio/rules/extensional-utils.scm \
 	pln-bio/rules/attraction-introduction.scm \
 	pln-bio/rules/extensional-similarity.scm \
 	pln-bio/rules/intensional-similarity.scm \
