@@ -234,3 +234,6 @@ results/
 *.log
 logs/
 expr-fc.scm
+
+notebooks/datasets/
+notebooks/.idea/
