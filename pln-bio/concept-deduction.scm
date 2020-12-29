@@ -6,7 +6,6 @@
     #:use-module (opencog ure)
     #:use-module (opencog pln)
     #:use-module (ice-9 threads)
-    #:use-module (fibers conditions)
     #:use-module (ice-9 suspendable-ports)
     #:use-module (ice-9 textual-ports)
     #:use-module (srfi srfi-1)

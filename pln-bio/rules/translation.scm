@@ -8,8 +8,6 @@
 )
 ;; Crisp rules about translating a link into another link
 
-(use-modules (pln-bio rule-utils))
-
 ;; Helpers
 (define ConceptT (TypeInh "ConceptNode"))
 (define GeneT (Type "GeneNode"))

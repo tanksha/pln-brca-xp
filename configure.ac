@@ -1,5 +1,4 @@
 AC_PREREQ(2.52)
-AC_INIT([fibers], [1.0.0])
 AC_CONFIG_SRCDIR([env.in])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIRS([m4])
