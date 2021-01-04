@@ -90,7 +90,7 @@ def parse_args():
                         help="Path to file that contains patient gene expression data")
     parser.add_argument("--target_col", type=str, default='posOutcome',
                         help="Name of the target column in the outcome file")
-    parser.parse_args()
+    return parser.parse_args()
 
 def start_moses_run():
     start_time = timer(None)
