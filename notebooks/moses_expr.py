@@ -78,6 +78,7 @@ def preprocess_input(outcome_data, gene_expr_data, target):
     result_df = pd.DataFrame(data=binary_genes_dict).sort_values(by='patient_ID') * 1
     merged_df = pd.merge(outcome_df, result_df, on="patient_ID")
     merged_df.drop("patient_ID", axis=1, inplace=True)
+    merged_df[target] = merged_df[target].astype(int)
     return merged_df
 
 
@@ -101,10 +102,12 @@ def start_moses_run():
     crossval_options = {"folds": 5, "testSize": 0.3, "randomSeed": 42}
     home_dir = os.environ["HOME"]
     wk_dir = os.path.join(home_dir, "moses_run_" + target_col)
-    os.makedirs(wk_dir)
-    input_file = result_df.to_csv(os.path.join(wk_dir, "gene_expr_"+target_col+".csv"))
+    if not os.path.exists(wk_dir):
+        os.makedirs(wk_dir)
+    input_file = os.path.join(wk_dir, "gene_expr_"+target_col+".csv")
+    result_df.to_csv(input_file)
 
-    cross_val = CrossValidation(input_file, wk_dir, target_col, moses_opts, crossval_options, "f1_score", 0.5)
+    cross_val = CrossValidation(input_file, wk_dir, target_col, moses_opts, crossval_options, "f1_score", 0.6)
 
     cross_val.run_folds()
     timer(start_time)
