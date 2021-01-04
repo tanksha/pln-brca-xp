@@ -72,14 +72,13 @@ def preprocess_input(outcome_data, gene_expr_data, target):
     outcome_df = outcome_df[["patient_ID", target]].dropna(axis=0, subset=[target])
     gene_expr_df = pd.read_csv(gene_expr_data)
     gene_cols = gene_expr_df.columns.to_list()[1:]
-    merged_df = pd.merge(outcome_df, gene_expr_df, on="patient_ID")
-    patient_ids = merged_df.patient_ID.to_list()
-    binary_genes_dict = binary_genes(merged_df, gene_cols)
+    patient_ids = gene_expr_df.patient_ID.to_list()
+    binary_genes_dict = binary_genes(gene_expr_df, gene_cols)
     binary_genes_dict["patient_ID"] = patient_ids
     result_df = pd.DataFrame(data=binary_genes_dict).sort_values(by='patient_ID') * 1
-
-    result_df.drop("patient_ID", axis=1, inplace=True)
-    return result_df
+    merged_df = pd.merge(outcome_df, result_df, on="patient_ID")
+    merged_df.drop("patient_ID", axis=1, inplace=True)
+    return merged_df
 
 
 def parse_args():
