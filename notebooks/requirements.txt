@@ -5,3 +5,4 @@ scipy
 xgboost
 matplotlib
 seaborn
+moses-crossval==0.2
