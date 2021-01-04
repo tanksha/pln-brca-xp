@@ -4,7 +4,7 @@ import numpy as np
 from mozi_cross_val.main.cross_val import CrossValidation
 import os
 import argparse
-import datetime
+from datetime import datetime
 
 def timer(start_time=None):
     if not start_time:
