@@ -27,8 +27,8 @@
 (define PT (Type "PredicateNode"))
 (define BT (TypeInh "ConceptNode"))
 
-(define-public (run-concept-deduction-expr overexpr?)
-    (setup-gene-expr overexpr?)
+(define-public (run-concept-deduction-expr overexpr? path)
+    (setup-gene-expr overexpr? path)
     ;; get patient atoms and run the deduction in batch
     (cog-logger-info "Generating SubsetLinks")
     ;;apply fc to get the relationship between go's and patients
@@ -36,7 +36,7 @@
             (batch-num 0)
             (batch-ls (split-lst patients batch-size))
             (batches (map (lambda (b) (set! batch-num (+ batch-num 1)) (cons batch-num b)) batch-ls))
-            (prefix (if overexpr? "results/batches_overexpr_50/" "results/batches_underexpr_50/")))
+            (prefix (if overexpr? (string-append path "/batches_overexpr/") (string-append path "/batches_underexpr/"))))
         
         (if (not (file-exists? prefix)) (mkdir prefix))
         (n-par-for-each (/ (current-processor-count) 2)  (lambda (batch)
@@ -248,7 +248,7 @@
                 (Member (Variable "$g") go)
                 (Member (Variable "$g") (ConceptNode "profiled-genes")))))))
 
-(define-public (setup-gene-expr overexpr?)
+(define-public (setup-gene-expr overexpr? path)
     ;; default opencog logger
     (cog-logger-set-stdout! #t)
     (cog-logger-set-filename! "logs/expr.log")
@@ -272,14 +272,14 @@
         (begin 
             (cog-logger-info "Loading patient overexpression data")
             ;;load the atomese form of overexpr & underexpr
-            (load-kbs (list "kbs/patient_gene_over_expr.scm"))
+            (load-kbs (list (string-append path "/patient_gene_over_expr.scm")))
 
             ;;generate the quantiles for overexpr
             (cog-logger-info "Generating SchemaValueLists")
-            (write-atoms-to-file "results/overexpr-dist_50.scm" (overexpression-dist))
+            (write-atoms-to-file (string-append path "/overexpr-dist.scm") (overexpression-dist))
             ;;get the evaluation links for overexpr
             (cog-logger-info "Generating EvaluationLinks")
-            (write-atoms-to-file "results/overexpr-evals_50.scm" (get-overexpr-eval-ln))
+            (write-atoms-to-file (string-append path "/overexpr-evals.scm") (get-overexpr-eval-ln))
             
             ;;Load moses models to get top ranked genes
             ;(cog-logger-info "Load moses models")
@@ -289,14 +289,14 @@
         (begin 
             (cog-logger-info "Loading patient underexpression data")
             ;;load the atomese form of overexpr & underexpr
-            (load-kbs (list "kbs/patient_gene_under_expr.scm"))
+            (load-kbs (list (string-append path "/patient_gene_under_expr.scm")))
 
             ;;generate the quantiles for overexpr
             (cog-logger-info "Generating SchemaValueLists")
-            (write-atoms-to-file "results/underexpr-dist_50.scm" (underexpression-dist))
+            (write-atoms-to-file (string-append path "/underexpr-dist_50.scm") (underexpression-dist))
             ;;get the evaluation links for overexpr
             (cog-logger-info "Generating EvaluationLinks")
-            (write-atoms-to-file "results/underexpr-evals_50.scm" (get-underexpr-eval-ln))
+            (write-atoms-to-file (string-append path "/underexpr-evals_50.scm") (get-underexpr-eval-ln))
 
             ;;Load moses models to get top ranked genes
             ;(cog-logger-info "Load moses models")
